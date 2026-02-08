@@ -1,0 +1,23 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment Variables (CRITICAL)
+.env
+backend/.env
+**/.env
+
+# Python/Backend
+backend/__pycache__/
+backend/*.pyc
+backend/venv/
+backend/.pytest_cache/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Flutter/Frontend (Detailed ignores are in frontend/.gitignore, but adding basics here)
+frontend/build/
+frontend/.dart_tool/

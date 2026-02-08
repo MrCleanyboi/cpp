@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+motor
+python-dotenv
+google-generativeai
+httpx
+pytest
+python-jose[cryptography]
+bcrypt
+python-multipart
+email-validator
+importlib-metadata
+openai-whisper
+openai
+requests
