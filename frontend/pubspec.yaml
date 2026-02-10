@@ -17,6 +17,9 @@ dependencies:
   record: 4.4.4
   path_provider: ^2.1.0
   shared_preferences: ^2.5.4
+  web_socket_channel: ^2.4.0
+  intl: ^0.20.2
+  flutter_webrtc: ^0.12.5
 
 dev_dependencies:
   flutter_test:

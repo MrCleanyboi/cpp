@@ -2,15 +2,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'partner_matched_screen.dart';
+import '../services/matching_api_service.dart';
 
 class PartnerWaitingScreen extends StatefulWidget {
   final String targetLanguage;
   final String practiceMode;
+  final Map<String, dynamic> queueStatus; // Real API response
 
   const PartnerWaitingScreen({
     super.key,
     required this.targetLanguage,
     required this.practiceMode,
+    required this.queueStatus,
   });
 
   @override
@@ -19,16 +22,19 @@ class PartnerWaitingScreen extends StatefulWidget {
 
 class _PartnerWaitingScreenState extends State<PartnerWaitingScreen>
     with SingleTickerProviderStateMixin {
-  int queuePosition = 3;
-  int estimatedSeconds = 45;
-  Timer? _countdownTimer;
-  Timer? _matchTimer;
+  int queuePosition = 0;
+  int estimatedSeconds = 0;
+  Timer? _statusPollTimer;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  bool _isMatched = false;
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize from queue status
+    _updateQueueStatus(widget.queueStatus);
 
     // Pulse animation for searching indicator
     _pulseController = AnimationController(
@@ -40,48 +46,93 @@ class _PartnerWaitingScreenState extends State<PartnerWaitingScreen>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    // Simulate countdown
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
+    // Poll for match status every 2 seconds
+    _statusPollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      _checkMatchStatus();
+    });
+  }
+
+  void _updateQueueStatus(Map<String, dynamic> status) {
+    // Check if immediately matched
+    if (status['status'] == 'matched') {
+      _isMatched = true;
+      _navigateToMatchFound(status);
+      return;
+    }
+
+    // Update queue info
+    setState(() {
+      queuePosition = status['position'] ?? 0;
+      estimatedSeconds = status['estimated_wait_seconds'] ?? 0;
+    });
+  }
+
+  Future<void> _checkMatchStatus() async {
+    if (_isMatched || !mounted) return;
+
+    try {
+      final status = await matchingApiService.getMatchStatus();
+
+      if (status['status'] == 'matched') {
+        _isMatched = true;
+        _navigateToMatchFound(status);
+      } else if (status['status'] == 'waiting' || status['status'] == 'queued') {
+        // Update queue position
         setState(() {
+          queuePosition = status['position'] ?? queuePosition;
+          estimatedSeconds = status['estimated_wait_seconds'] ?? estimatedSeconds;
+          
+          // Countdown estimate
           if (estimatedSeconds > 0) estimatedSeconds--;
-          if (queuePosition > 1 && estimatedSeconds % 7 == 0) {
-            queuePosition--;
-          }
         });
       }
-    });
+    } catch (e) {
+      print('Error checking match status: $e');
+      // Continue polling - transient error
+    }
+  }
 
-    // Simulate finding a match after 5-8 seconds
-    final matchDelay = 5 + (DateTime.now().millisecond % 3);
-    _matchTimer = Timer(Duration(seconds: matchDelay), _navigateToMatchFound);
+  void _navigateToMatchFound(Map<String, dynamic> matchData) {
+    _statusPollTimer?.cancel();
+    
+    if (mounted) {
+      // Use Future.delayed to ensure we're not in a build phase
+      Future.delayed(Duration.zero, () {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PartnerMatchedScreen(
+                targetLanguage: widget.targetLanguage,
+                matchData: matchData, // Pass real match data
+              ),
+            ),
+          );
+        }
+      });
+    }
+  }
+
+  Future<void> _cancelSearch() async {
+    _statusPollTimer?.cancel();
+    
+    // Call API to leave queue
+    try {
+      await matchingApiService.leaveQueue();
+    } catch (e) {
+      print('Error leaving queue: $e');
+    }
+    
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   @override
   void dispose() {
-    _countdownTimer?.cancel();
-    _matchTimer?.cancel();
+    _statusPollTimer?.cancel();
     _pulseController.dispose();
     super.dispose();
-  }
-
-  void _navigateToMatchFound() {
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PartnerMatchedScreen(
-            targetLanguage: widget.targetLanguage,
-          ),
-        ),
-      );
-    }
-  }
-
-  void _cancelSearch() {
-    _countdownTimer?.cancel();
-    _matchTimer?.cancel();
-    Navigator.pop(context);
   }
 
   @override

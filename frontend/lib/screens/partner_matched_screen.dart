@@ -5,10 +5,12 @@ import 'partner_chat_screen.dart';
 
 class PartnerMatchedScreen extends StatefulWidget {
   final String targetLanguage;
+  final Map<String, dynamic> matchData; // Real match data from API
 
   const PartnerMatchedScreen({
     super.key,
     required this.targetLanguage,
+    required this.matchData,
   });
 
   @override
@@ -22,20 +24,25 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
 
-  // Mock partner data
-  final Map<String, dynamic> mockPartner = {
-    'username': 'maria_garcia',
-    'display_name': 'Maria Garcia',
-    'avatar_url': null,
-    'native_language': 'Spanish',
-    'learning_language': 'English',
-    'proficiency_level': 'Advanced',
-    'bio': 'Teacher from Madrid, love travel and culture',
-  };
+  // Extract partner data from matchData
+  late Map<String, dynamic> partner;
+  late String matchId;
+  late String websocketUrl;
 
   @override
   void initState() {
     super.initState();
+
+    // Extract data from API response
+    matchId = widget.matchData['match_id'];
+    partner = widget.matchData['partner'];
+    websocketUrl = widget.matchData['websocket_url'] ?? '';
+
+    // Initialize animations
+    _initAnimations();
+  }
+
+  void _initAnimations() {
 
     // Scale animation for success indicator
     _scaleController = AnimationController(
@@ -51,15 +58,18 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
 
     // Countdown timer
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      
+      if (countdown > 1) {
         setState(() {
-          if (countdown > 1) {
-            countdown--;
-          } else {
-            _countdownTimer?.cancel();
-            _navigateToChat();
-          }
+          countdown--;
         });
+      } else {
+        timer.cancel();
+        _safeNavigateToChat();
       }
     });
   }
@@ -71,16 +81,32 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
     super.dispose();
   }
 
-  void _navigateToChat() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PartnerChatScreen(
-          partner: mockPartner,
-          targetLanguage: widget.targetLanguage,
-        ),
-      ),
-    );
+  bool _isNavigating = false;
+
+  void _safeNavigateToChat() {
+    print("DEBUG: _safeNavigateToChat called (Version Fixed)");
+    if (_isNavigating) return;
+    _isNavigating = true;
+    _countdownTimer?.cancel();
+
+    // Use Future.delayed to avoid scheduler lock issues
+    Future.delayed(Duration.zero, () {
+      print("DEBUG: Executing Future.delayed navigation callback");
+      if (mounted) {
+        print("DEBUG: mounted is true, pushing replacement");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PartnerChatScreen(
+              matchId: matchId,
+              partner: partner,
+              targetLanguage: widget.targetLanguage,
+              websocketUrl: websocketUrl,
+            ),
+          ),
+        );
+      }
+    });
   }
 
   void _skipPartner() {
@@ -166,7 +192,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                       radius: 50,
                       backgroundColor: const Color(0xFF6C63FF),
                       child: Text(
-                        mockPartner['display_name'][0],
+                        (partner['display_name'] ?? 'P')[0],
                         style: GoogleFonts.outfit(
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
@@ -179,7 +205,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
 
                     // Name
                     Text(
-                      mockPartner['display_name'],
+                      partner['display_name'] ?? 'Partner',
                       style: GoogleFonts.outfit(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -205,7 +231,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                           const Text('🇪🇸', style: TextStyle(fontSize: 16)),
                           const SizedBox(width: 6),
                           Text(
-                            'Native ${mockPartner['native_language']}',
+                            'Native ${partner['language'] ?? 'Unknown'}',
                             style: GoogleFonts.outfit(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -229,7 +255,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Learning ${mockPartner['learning_language']}',
+                          'Learning ${widget.targetLanguage}',
                           style: GoogleFonts.outfit(
                             fontSize: 14,
                             color: Colors.white70,
@@ -251,7 +277,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          '${mockPartner['proficiency_level']} Level',
+                          'Language Partner',
                           style: GoogleFonts.outfit(
                             fontSize: 14,
                             color: Colors.white70,
@@ -270,7 +296,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        mockPartner['bio'],
+                        '@${partner['username'] ?? 'user'}',
                         style: GoogleFonts.outfit(
                           fontSize: 13,
                           color: Colors.white60,
@@ -330,7 +356,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                   Expanded(
                     flex: 2,
                     child: ElevatedButton(
-                      onPressed: _navigateToChat,
+                      onPressed: _safeNavigateToChat,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6C63FF),
                         padding: const EdgeInsets.symmetric(vertical: 16),

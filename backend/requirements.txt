@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 motor
 python-dotenv
 google-generativeai
@@ -13,3 +13,8 @@ importlib-metadata
 openai-whisper
 openai
 requests
+transformers
+torch
+click
+h11
+websockets

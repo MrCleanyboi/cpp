@@ -1,11 +1,11 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
 
 
 class UserSignup(BaseModel):
     """User registration data"""
     username: str
-    email: EmailStr
+    email: str
     password: str
     native_language: str
     target_language: str

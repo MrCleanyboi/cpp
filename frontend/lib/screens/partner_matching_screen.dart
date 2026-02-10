@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'partner_waiting_screen.dart';
+import '../services/matching_api_service.dart';
 
 class PartnerMatchingScreen extends StatefulWidget {
   const PartnerMatchingScreen({super.key});
@@ -369,15 +370,54 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
     );
   }
 
-  void _findPartner() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PartnerWaitingScreen(
-          targetLanguage: selectedLanguage,
-          practiceMode: practiceMode,
+  Future<void> _findPartner() async {
+    try {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
         ),
-      ),
-    );
+      );
+      
+      // Call real API
+      final result = await matchingApiService.joinQueue(
+        targetLanguage: selectedLanguage,
+        proficiencyLevel: selectedLevel,
+        practiceMode: practiceMode.toLowerCase().replaceAll(' ', '_'),
+        topics: selectedTopics.map((t) => t.toLowerCase()).toList(),
+      );
+      
+      // Close loading
+      if (mounted) Navigator.pop(context);
+      
+      // Navigate to waiting screen with real data
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PartnerWaitingScreen(
+              targetLanguage: selectedLanguage,
+              practiceMode: practiceMode,
+              queueStatus: result, // Pass API result
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading if still showing
+      if (mounted) Navigator.pop(context);
+      
+      // Show error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to find partner: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
