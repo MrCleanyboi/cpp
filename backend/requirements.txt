@@ -1,9 +1,5 @@
 fastapi
-<<<<<<< HEAD
 uvicorn[standard]
-=======
-uvicorn
->>>>>>> origin/main
 motor
 python-dotenv
 google-generativeai
@@ -17,11 +13,9 @@ importlib-metadata
 openai-whisper
 openai
 requests
-<<<<<<< HEAD
 transformers
 torch
 click
 h11
 websockets
-=======
->>>>>>> origin/main
+
