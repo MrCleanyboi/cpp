@@ -1,5 +1,0 @@
-Python executable: C:\Users\aryan\AppData\Local\Programs\Python\Python39\python.exe
-Torch version: 2.8.0+cpu
-TensorFlow import failed: No module named 'tensorflow'
-Transformers pipeline imported successfully
-Whisper imported successfully

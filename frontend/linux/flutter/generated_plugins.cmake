@@ -3,7 +3,10 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+<<<<<<< HEAD
   flutter_webrtc
+=======
+>>>>>>> origin/main
   record_linux
 )
 

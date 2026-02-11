@@ -8,16 +8,29 @@ backend/.env
 **/.env
 
 # Python/Backend
-backend/__pycache__/
-backend/*.pyc
+__pycache__/
+**/__pycache__/
+*.pyc
+.venv/
 backend/venv/
 backend/.pytest_cache/
+
+# Debug/Log outputs
+*.log
+backend/db_test_output.txt
+backend/debug_out.txt
+backend/routes.txt
+
+# Archives
+*.rar
+*.zip
+*.7z
 
 # IDEs
 .idea/
 .vscode/
 *.iml
 
-# Flutter/Frontend (Detailed ignores are in frontend/.gitignore, but adding basics here)
+# Flutter/Frontend
 frontend/build/
 frontend/.dart_tool/

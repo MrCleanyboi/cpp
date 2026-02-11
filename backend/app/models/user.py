@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from pydantic import BaseModel, Field
+=======
+from pydantic import BaseModel, EmailStr, Field
+>>>>>>> origin/main
 from typing import Optional, List, Any
 from bson import ObjectId
 from datetime import datetime
