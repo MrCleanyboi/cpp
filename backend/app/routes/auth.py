@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Depends
 from typing import Optional
 from bson import ObjectId
 from datetime import datetime
@@ -12,6 +12,7 @@ from app.utils.security import (
     create_access_token,
     get_user_id_from_token
 )
+from app.services.auth_service import get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
@@ -97,33 +98,75 @@ async def login(credentials: UserLogin):
     )
 
 
+from app.services.auth_service import get_current_user
+
+# ... (rest of imports should be fine)
+
 @router.get("/me", response_model=UserResponse)
-async def get_current_user(authorization: Optional[str] = Header(None)):
+async def get_me(current_user: UserInDB = Depends(get_current_user)):
     """Get current authenticated user"""
+    return UserResponse(
+        id=str(current_user.id),
+        username=current_user.username,
+        email=current_user.email,
+        native_language=current_user.native_language,
+        target_language=current_user.target_language,
+        proficiency_level=current_user.proficiency_level,
+        display_name=current_user.display_name,
+        avatar_url=current_user.avatar_url
+    )
+
+@router.patch("/me", response_model=UserResponse)
+async def update_me(
+    update_data: dict,
+    current_user: UserInDB = Depends(get_current_user)
+):
+    """Update current authenticated user's profile"""
+    from datetime import datetime
     
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Not authenticated")
+    # Only allow updating certain fields
+    allowed_fields = {
+        'target_language', 'native_language', 'proficiency_level',
+        'display_name', 'avatar_url', 'bio'
+    }
     
-    token = authorization.replace("Bearer ", "")
-    user_id = get_user_id_from_token(token)
+    # Filter update data to only allowed fields
+    filtered_update = {
+        key: value for key, value in update_data.items() 
+        if key in allowed_fields
+    }
     
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    if not filtered_update:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
     
-    # Get user from database
-    user = await db.users.find_one({"_id": ObjectId(user_id)})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    # Add updated timestamp
+    filtered_update['updated_at'] = datetime.utcnow()
+    
+    # Update user in database
+    result = await db.users.update_one(
+        {"_id": ObjectId(str(current_user.id))},
+        {"$set": filtered_update}
+    )
+    
+    if result.modified_count == 0:
+        # Still return success even if nothing changed
+        pass
+    
+    # Fetch updated user
+    updated_user = await db.users.find_one({"_id": ObjectId(str(current_user.id))})
+    
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found after update")
     
     return UserResponse(
-        id=str(user['_id']),
-        username=user['username'],
-        email=user['email'],
-        native_language=user['native_language'],
-        target_language=user['target_language'],
-        proficiency_level=user['proficiency_level'],
-        display_name=user.get('display_name'),
-        avatar_url=user.get('avatar_url')
+        id=str(updated_user['_id']),
+        username=updated_user['username'],
+        email=updated_user['email'],
+        native_language=updated_user['native_language'],
+        target_language=updated_user['target_language'],
+        proficiency_level=updated_user['proficiency_level'],
+        display_name=updated_user.get('display_name'),
+        avatar_url=updated_user.get('avatar_url')
     )
 
 

@@ -327,6 +327,16 @@ class _LessonScreenState extends State<LessonScreen> {
       );
     } 
     else if (exercise is TranslateExercise) {
+       // Determine hint based on the question context
+       String hintText = "Type your answer...";
+       if (exercise.question.contains("French")) {
+         hintText = "Type in French...";
+       } else if (exercise.question.contains("German")) {
+         hintText = "Type in German...";
+       } else if (exercise.question.contains("Spanish")) {
+         hintText = "Type in Spanish...";
+       }
+       
        return TextField(
          enabled: !_isAnswerChecked,
          onChanged: (val) {
@@ -335,9 +345,9 @@ class _LessonScreenState extends State<LessonScreen> {
            });
          },
          style: const TextStyle(color: Colors.white),
-         decoration: const InputDecoration(
-           hintText: "Type in German...",
-           border: OutlineInputBorder(),
+         decoration: InputDecoration(
+           hintText: hintText,
+           border: const OutlineInputBorder(),
          ),
        );
     }

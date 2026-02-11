@@ -18,22 +18,39 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   final _authService = AuthService();
   String? _userId;
+  String _targetLanguage = 'en'; // Default to English
 
   @override
   void initState() {
     super.initState();
     print('DEBUG: HomeScreen initState');
-    _loadUserId();
+    _loadUserData();
   }
 
-  Future<void> _loadUserId() async {
-    print('DEBUG: HomeScreen loading userId...');
+  Future<void> _loadUserData() async {
+    print('DEBUG: HomeScreen loading user data...');
     final userId = await _authService.getUserId();
+    final user = await AuthService.getUser();
+    
     print('DEBUG: HomeScreen loaded userId: $userId');
+    print('DEBUG: HomeScreen loaded user: $user');
+    
     if (mounted) {
         setState(() {
             _userId = userId;
+            _targetLanguage = user?['target_language'] ?? 'en';
         });
+        print('DEBUG: HomeScreen set target language: $_targetLanguage');
+    }
+  }
+
+  // Method to refresh language (call this after language selection)
+  Future<void> refreshLanguage() async {
+    final user = await AuthService.getUser();
+    if (mounted && user != null) {
+      setState(() {
+        _targetLanguage = user['target_language'] ?? 'en';
+      });
     }
   }
 
@@ -52,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     */
     
-    print('DEBUG: HomeScreen build. _userId: $_userId');
+    print('DEBUG: HomeScreen build. _userId: $_userId, targetLanguage: $_targetLanguage');
     if (_userId == null) {
       print('DEBUG: HomeScreen showing loading indicator');
       return const Scaffold(
@@ -62,7 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final List<Widget> screens = [
-      const LearningPathScreen(),
+      LearningPathScreen(
+        key: ValueKey(_targetLanguage), // Rebuild when language changes
+        targetLanguage: _targetLanguage,
+      ),
       const ChatScreen(),
       const PartnerMatchingScreen(),
       ProfileScreen(userId: _userId!),

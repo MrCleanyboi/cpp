@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'home_screen.dart';
+import '../services/auth_service.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {
   const LanguageSelectionScreen({super.key});
@@ -33,13 +34,23 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
     },
   ];
 
-  void _continueToHome() {
+  Future<void> _continueToHome() async {
     if (_selectedLanguage != null) {
-      // TODO: Save selected language preference
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      print('DEBUG: Selected language: $_selectedLanguage');
+      
+      // Save selected language preference
+      final result = await AuthService.updateProfile({
+        'target_language': _selectedLanguage,
+      });
+      
+      print('DEBUG: Update profile result: $result');
+      
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
     }
   }
 

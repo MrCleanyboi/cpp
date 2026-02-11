@@ -2,19 +2,29 @@ import 'package:flutter/material.dart';
 import 'widgets/path_node.dart';
 import 'widgets/section_header.dart';
 import '../../models/lesson_model.dart';
+import '../../utils/language_theme.dart'; // Import LanguageTheme
 import '../lesson_screen.dart';
 
 class LearningPathScreen extends StatelessWidget {
-  const LearningPathScreen({super.key});
+  final String targetLanguage;
+  
+  const LearningPathScreen({
+    super.key,
+    required this.targetLanguage,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Get theme based on target language
+    final theme = LanguageTheme.getTheme(targetLanguage);
+    print('DEBUG LearningPath: Using theme for $targetLanguage, color: ${theme.primaryColor}');
+    
     // structured list with sections
     final List<dynamic> pathItems = [];
     final sections = [
-      {'name': 'Beginner', 'color': const Color(0xFF58CC02)}, 
-      {'name': 'Intermediate', 'color': const Color(0xFFCE82FF)}, 
-      {'name': 'Advanced', 'color': const Color(0xFFFF9600)}
+      {'name': 'Beginner', 'color': theme.primaryColor}, // Dynamic color!
+      {'name': 'Intermediate', 'color': theme.secondaryColor}, // Dynamic!
+      {'name': 'Advanced', 'color': theme.accentColor} // Dynamic!
     ];
 
     for (int s = 0; s < sections.length; s++) {
@@ -50,7 +60,8 @@ class LearningPathScreen extends StatelessWidget {
             'title': '$sectionName $u-$l', 
             'icon': _getIconForLesson(l), 
             'status': isFirst ? 'current' : 'locked', 
-            'x': x
+            'x': x,
+            'sectionColor': sectionColor // Pass color to node
           });
         }
       }
@@ -121,20 +132,26 @@ class LearningPathScreen extends StatelessWidget {
               isLocked: isLocked,
               isCompleted: isCompleted,
               isCurrent: isCurrent,
-              color: _getColorForSection(index), // Dynamic color based on section
+              color: item['sectionColor'] ?? const Color(0xFF58CC02), // Use dynamic color from item
               onTap: () {
                 if (!isLocked) {
-                   final lesson = LessonData.getLesson(item['title']);
+                   // Try language-specific lesson first (e.g., fr_beginner_1_1)
+                   final lessonKey = '${targetLanguage}_beginner_1_1';
+                   Lesson? lesson = LessonData.getLessonByLanguage(targetLanguage, 'beginner_1_1');
+                   
+                   // Fallback to old lookup by title
+                   lesson ??= LessonData.getLesson(item['title']);
+                   
                    if (lesson != null) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => LessonScreen(lesson: lesson),
+                          builder: (_) => LessonScreen(lesson: lesson!),
                         ),
                       );
                    } else {
                      ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(content: Text("Lesson content coming soon!")),
+                       SnackBar(content: Text("Lesson '${item['title']}' coming soon!")),
                      );
                    }
                 }
@@ -146,12 +163,7 @@ class LearningPathScreen extends StatelessWidget {
     );
   }
   
-  Color _getColorForSection(int index) {
-    // Simple logic to alternate colors based on approximate position
-    // In a real app, pass the section color down
-    if (index < 9) return const Color(0xFF58CC02); // Green
-    return const Color(0xFFCE82FF); // Purple
-  }
+  // Remove old _getColorForSection method since we now use dynamic colors
 
   IconData _getIconForLesson(int index) {
     const icons = [

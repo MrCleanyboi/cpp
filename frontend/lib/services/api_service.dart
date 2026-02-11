@@ -1,10 +1,14 @@
 import 'dart:convert';
 import 'dart:io' as io;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 class ApiService {
   // Use localhost for Windows/iOS/Web, 10.0.2.2 for Android Emulator
   static String get baseUrl {
+    if (kIsWeb) {
+      return "http://localhost:8000";
+    }
     if (io.Platform.isAndroid) {
       return "http://10.0.2.2:8000"; 
     }

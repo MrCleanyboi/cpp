@@ -4,10 +4,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/user_model.dart';
+import 'api_service.dart';
 
 class AuthService {
   // Base URL - platform aware
-  String get baseUrl {
+  static String get baseUrl {
     if (kIsWeb) {
       return 'http://localhost:8000/api';
     } else if (Platform.isAndroid) {
@@ -102,6 +103,35 @@ class AuthService {
     }
   }
 
+  // Update user profile
+  static Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Not authenticated'};
+      }
+
+      final url = Uri.parse('$baseUrl/auth/me');
+      final response = await http.patch(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(data),
+      );
+
+      if (response.statusCode == 200) {
+        return {'success': true};
+      } else {
+        return {'success': false, 'error': 'Failed to update profile'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: $e'};
+    }
+  }
+
+
   // Get current authenticated user
   Future<UserModel?> getCurrentUser() async {
     try {
@@ -150,7 +180,7 @@ class AuthService {
   }
 
   // Get stored token
-  Future<String?> getToken() async {
+  static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_tokenKey);
   }
@@ -181,5 +211,36 @@ class AuthService {
     await prefs.setString(_tokenKey, token);
     await prefs.setString(_userIdKey, userId);
     await prefs.setString(_usernameKey, username);
+  }
+
+  // Get current user data as Map (for non-model usage)
+  static Future<Map<String, dynamic>?> getUser() async {
+    try {
+      final token = await getToken();
+      if (token == null) return null;
+
+      final url = Uri.parse('$baseUrl/auth/me');
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error getting user: $e');
+      return null;
+    }
+  }
+
+  // Get authorization headers
+  static Future<Map<String, String>> getHeaders() async {
+    final token = await getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
   }
 }
