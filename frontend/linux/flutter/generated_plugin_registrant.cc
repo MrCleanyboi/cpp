@@ -6,7 +6,6 @@
 
 #include "generated_plugin_registrant.h"
 
-<<<<<<< HEAD
 #include <flutter_webrtc/flutter_web_r_t_c_plugin.h>
 #include <record_linux/record_linux_plugin.h>
 
@@ -14,11 +13,6 @@ void fl_register_plugins(FlPluginRegistry* registry) {
   g_autoptr(FlPluginRegistrar) flutter_webrtc_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "FlutterWebRTCPlugin");
   flutter_web_r_t_c_plugin_register_with_registrar(flutter_webrtc_registrar);
-=======
-#include <record_linux/record_linux_plugin.h>
-
-void fl_register_plugins(FlPluginRegistry* registry) {
->>>>>>> origin/main
   g_autoptr(FlPluginRegistrar) record_linux_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "RecordLinuxPlugin");
   record_linux_plugin_register_with_registrar(record_linux_registrar);
