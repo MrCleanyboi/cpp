@@ -36,6 +36,7 @@ class GamificationService {
   // Complete a lesson
   Future<Map<String, dynamic>> completeLesson({
     required String userId,
+    String? lessonId, // Add lessonId for per-language tracking
     required bool perfect,
     required int timeSpentMinutes,
   }) async {
@@ -46,6 +47,7 @@ class GamificationService {
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'user_id': userId,
+          if (lessonId != null) 'lesson_id': lessonId, // Include if provided
           'perfect': perfect,
           'time_spent_minutes': timeSpentMinutes,
         }),

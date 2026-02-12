@@ -269,42 +269,83 @@ class GamificationService:
         }
     
     @staticmethod
-    async def complete_lesson(user_id: str, perfect: bool = False, time_spent_minutes: int = 0) -> Dict:
+    async def complete_lesson(user_id: str, lesson_id: str = None, perfect: bool = False, time_spent_minutes: int = 0) -> Dict:
         """
         Handle lesson completion with all gamification updates.
         
         Args:
             user_id: User ID
+            lesson_id: Lesson identifier (e.g., 'fr_beginner_1_1')
             perfect: True if lesson completed with no mistakes
             time_spent_minutes: Time spent on lesson
         
         Returns:
-            Comprehensive update dictionary
+            Dictionary with XP gained, achievements, level up info
         """
         gam = await GamificationService.get_or_create_user_gamification(user_id)
         
-        # Update stats
+        # Calculate XP reward
+        base_xp = XP_REWARDS['lesson_completion']
+        perfect_bonus = XP_REWARDS['perfect_lesson'] if perfect else 0
+        speed_bonus = XP_REWARDS['quick_lesson'] if time_spent_minutes <= 5 else 0
+        
+        total_xp = base_xp + perfect_bonus + speed_bonus
+        
+        # Update total lessons completed (cross-language)
         gam.total_lessons_completed += 1
-        gam.total_time_minutes += time_spent_minutes
         
-        # Track perfect lessons
+        # Update perfect lesson count for achievements
         if perfect:
-            current_perfect = gam.achievements_progress.get('perfect_lessons', 0)
-            gam.achievements_progress['perfect_lessons'] = current_perfect + 1
+            if 'perfect_lessons' not in gam.achievements_progress:
+                gam.achievements_progress['perfect_lessons'] = 0
+            gam.achievements_progress['perfect_lessons'] += 1
         
+        # Track per-language progress if lesson_id provided
+        if lesson_id:
+            # Extract language code from lesson_id (e.g., 'fr' from 'fr_beginner_1_1')
+            lang_code = lesson_id.split('_')[0] if '_' in lesson_id else 'en'
+            
+            # Get user document to update language_progress
+            user = await db.users.find_one({"_id": ObjectId(user_id)})
+            if user:
+                language_progress = user.get('language_progress', {})
+                
+                # Initialize language progress if doesn't exist
+                if lang_code not in language_progress:
+                    language_progress[lang_code] = {
+                        'completed_lessons': [],
+                        'xp': 0,
+                        'current_lesson': None
+                    }
+                
+                # Add lesson to completed if not already there
+                if lesson_id not in language_progress[lang_code].get('completed_lessons', []):
+                    language_progress[lang_code]['completed_lessons'].append(lesson_id)
+                
+                # Add XP to language-specific progress
+                language_progress[lang_code]['xp'] = language_progress[lang_code].get('xp', 0) + total_xp
+                
+                # Update user's language_progress
+                await db.users.update_one(
+                    {"_id": ObjectId(user_id)},
+                    {"$set": {"language_progress": language_progress}}
+                )
+        
+        # Award XP (this handles level ups and achievements)
+        xp_result = await GamificationService.award_xp(user_id, total_xp, "lesson_completion")
+        
+        # Update streak
+        streak_result = await GamificationService.update_streak(user_id)
+        
+        # Save gamification updates
         gam.updated_at = datetime.utcnow()
-        
         await db.user_gamifications.update_one(
             {"user_id": ObjectId(user_id)},
             {"$set": gam.dict(by_alias=True, exclude={'id'})}
         )
         
-        # Award XP
-        xp_to_award = XP_REWARDS['perfect_lesson'] if perfect else XP_REWARDS['lesson_complete']
-        xp_result = await GamificationService.award_xp(user_id, xp_to_award, "lesson completion")
-        
-        # Update streak
-        streak_result = await GamificationService.update_streak(user_id)
+        # Refresh gam data after all updates
+        gam = await GamificationService.get_or_create_user_gamification(user_id)
         
         return {
             **xp_result,

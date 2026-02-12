@@ -4,8 +4,9 @@ import 'widgets/section_header.dart';
 import '../../models/lesson_model.dart';
 import '../../utils/language_theme.dart'; // Import LanguageTheme
 import '../lesson_screen.dart';
+import '../../services/auth_service.dart';
 
-class LearningPathScreen extends StatelessWidget {
+class LearningPathScreen extends StatefulWidget {
   final String targetLanguage;
   
   const LearningPathScreen({
@@ -14,10 +15,81 @@ class LearningPathScreen extends StatelessWidget {
   });
 
   @override
+  State<LearningPathScreen> createState() => _LearningPathScreenState();
+}
+
+class _LearningPathScreenState extends State<LearningPathScreen> {
+  List<String> _completedLessons = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCompletedLessons();
+  }
+
+  Future<void> _loadCompletedLessons() async {
+    try {
+      final user = await AuthService.getUser();
+      if (user != null) {
+        final languageProgress = user['language_progress'];
+        if (languageProgress != null && 
+            languageProgress is Map && 
+            languageProgress.containsKey(widget.targetLanguage)) {
+          
+          final langProg = languageProgress[widget.targetLanguage];
+          final completed = langProg['completed_lessons'];
+          
+          if (completed is List) {
+            setState(() {
+              _completedLessons = completed.map((e) => e.toString()).toList();
+              _isLoading = false;
+            });
+            return;
+          }
+        }
+      }
+      
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading completed lessons: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  bool _isLessonCompleted(String lessonId) {
+    return _completedLessons.contains(lessonId);
+  }
+
+  bool _isLessonUnlocked(int unitNum, int lessonNum) {
+    // First lesson is always unlocked
+    if (unitNum == 1 && lessonNum == 1) return true;
+    
+    // Check if previous lesson is completed
+    final previousLessonId = '${widget.targetLanguage}_beginner_${unitNum}_${lessonNum - 1}';
+    return _isLessonCompleted(previousLessonId);
+  }
+
+
+
+
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF11141C),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    
     // Get theme based on target language
-    final theme = LanguageTheme.getTheme(targetLanguage);
-    print('DEBUG LearningPath: Using theme for $targetLanguage, color: ${theme.primaryColor}');
+    final theme = LanguageTheme.getTheme(widget.targetLanguage);
+    print('DEBUG LearningPath: Using theme for ${widget.targetLanguage}, color: ${theme.primaryColor}');
     
     // structured list with sections
     final List<dynamic> pathItems = [];
@@ -46,7 +118,12 @@ class LearningPathScreen extends StatelessWidget {
 
         // 6 Lessons per Unit
         for (int l = 1; l <= 6; l++) {
-          final bool isFirst = s == 0 && u == 1 && l == 1;
+          // Progressive unlock: check if lesson is unlocked
+          final bool isUnlocked = s == 0 && u == 1 && l <= 4 && _isLessonUnlocked(u, l);
+          
+          // Check if this specific lesson is completed
+          final lessonId = '${widget.targetLanguage}_beginner_${u}_$l';
+          final bool isCompleted = _isLessonCompleted(lessonId);
           
           // Create smooth diagonal snake pattern (like Duolingo)
           // Pattern creates smooth S-curve: far right → mid right → center → mid left → far left → ...
@@ -59,9 +136,11 @@ class LearningPathScreen extends StatelessWidget {
             'type': 'node', 
             'title': '$sectionName $u-$l', 
             'icon': _getIconForLesson(l), 
-            'status': isFirst ? 'current' : 'locked', 
+            'status': isCompleted ? 'completed' : (isUnlocked ? 'current' : 'locked'),
             'x': x,
-            'sectionColor': sectionColor // Pass color to node
+            'sectionColor': sectionColor, // Pass color to node
+            'unitNum': u,      // Store unit number for lesson lookup
+            'lessonNum': l,    // Store lesson number for lesson lookup
           });
         }
       }
@@ -75,23 +154,27 @@ class LearningPathScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.only(bottom: 100),
-        itemCount: pathItems.length,
-        itemBuilder: (context, index) {
-          final item = pathItems[index];
-          print('DEBUG: Rendering item $index: ${item['type']}');
+      body: RefreshIndicator(
+        onRefresh: _loadCompletedLessons,
+        color: theme.primaryColor,
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(), // Ensure refresh works even if list is short
+          padding: const EdgeInsets.only(bottom: 100),
+          itemCount: pathItems.length,
+          itemBuilder: (context, index) {
+            final item = pathItems[index];
 
-          if (item['type'] == 'header') {
-            return SectionHeader(
-              title: item['title'],
-              description: item['desc'],
-              color: item['color'],
-            );
-          } else {
-            return _buildPathNodeRow(context, item, index, pathItems);
-          }
-        },
+            if (item['type'] == 'header') {
+              return SectionHeader(
+                title: item['title'],
+                description: item['desc'],
+                color: item['color'],
+              );
+            } else {
+              return _buildPathNodeRow(context, item, index, pathItems);
+            }
+          },
+        ),
       ),
     );
   }
@@ -135,20 +218,28 @@ class LearningPathScreen extends StatelessWidget {
               color: item['sectionColor'] ?? const Color(0xFF58CC02), // Use dynamic color from item
               onTap: () {
                 if (!isLocked) {
-                   // Try language-specific lesson first (e.g., fr_beginner_1_1)
-                   final lessonKey = '${targetLanguage}_beginner_1_1';
-                   Lesson? lesson = LessonData.getLessonByLanguage(targetLanguage, 'beginner_1_1');
+                   // Get unit and lesson numbers from item
+                   final unitNum = item['unitNum'] ?? 1;
+                   final lessonNum = item['lessonNum'] ?? 1;
+                   
+                   // Try language-specific lesson (e.g., fr_beginner_1_2)
+                   final lessonPath = 'beginner_${unitNum}_$lessonNum';
+                   Lesson? lesson = LessonData.getLessonByLanguage(widget.targetLanguage, lessonPath);
                    
                    // Fallback to old lookup by title
                    lesson ??= LessonData.getLesson(item['title']);
                    
                    if (lesson != null) {
+                      // Navigate and reload when returning
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => LessonScreen(lesson: lesson!),
                         ),
-                      );
+                      ).then((_) {
+                        // Reload completed lessons when returning from lesson
+                        _loadCompletedLessons();
+                      });
                    } else {
                      ScaffoldMessenger.of(context).showSnackBar(
                        SnackBar(content: Text("Lesson '${item['title']}' coming soon!")),

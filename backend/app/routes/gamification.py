@@ -17,6 +17,7 @@ class AwardXPRequest(BaseModel):
 
 class LessonCompleteRequest(BaseModel):
     user_id: str
+    lesson_id: Optional[str] = None  # For per-language progress tracking
     perfect: bool = False
     time_spent_minutes: int = 0
 
@@ -58,14 +59,29 @@ async def award_xp(request: AwardXPRequest):
 @router.post("/lesson/complete")
 async def complete_lesson(request: LessonCompleteRequest):
     """Handle lesson completion with all gamification updates"""
+    print(f"\n=== LESSON COMPLETE REQUEST ===")
+    print(f"user_id: {request.user_id}")
+    print(f"lesson_id: {request.lesson_id}")
+    print(f"perfect: {request.perfect}")
+    print(f"time_spent: {request.time_spent_minutes}")
+    print(f"================================\n")
+    
     try:
         result = await gamification_service.complete_lesson(
             request.user_id,
+            request.lesson_id,  # Pass lesson_id for per-language tracking
             request.perfect,
             request.time_spent_minutes
         )
+        print(f"SUCCESS: Lesson completion returned: {result}")
         return {"status": "success", "data": result}
     except Exception as e:
+        print(f"\n!!! ERROR in complete_lesson route !!!")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        import traceback
+        print(f"Traceback:\n{traceback.format_exc()}")
+        print(f"!!! END ERROR !!!\n")
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -62,7 +62,16 @@ class _LessonScreenState extends State<LessonScreen> {
     setState(() {
       _isAnswerChecked = true;
       _isAnswerCorrect = correct;
-      _feedbackMessage = correct ? "Great job!" : "Correct answer: ${currentExercise.answer}";
+      
+      // Get answer based on exercise type
+      String correctAnswer = '';
+      if (currentExercise is MultipleChoiceExercise) {
+        correctAnswer = currentExercise.answer;
+      } else if (currentExercise is TranslateExercise) {
+        correctAnswer = currentExercise.answer;
+      }
+      
+      _feedbackMessage = correct ? "Great job!" : "Correct answer: $correctAnswer";
       
       if (correct) {
         // Increment progress immediately only if correct
@@ -92,6 +101,7 @@ class _LessonScreenState extends State<LessonScreen> {
       
       final result = await _gamificationService.completeLesson(
         userId: _userId!,
+        lessonId: widget.lesson.id, // Pass lesson ID for per-language tracking
         perfect: _mistakesCount == 0,
         timeSpentMinutes: timeSpent,
       );

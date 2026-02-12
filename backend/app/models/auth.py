@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, Dict, Any
 
 
 class UserSignup(BaseModel):
@@ -42,3 +42,4 @@ class UserResponse(BaseModel):
     proficiency_level: str
     display_name: Optional[str] = None
     avatar_url: Optional[str] = None
+    language_progress: Optional[Dict[str, Any]] = None  # Added language_progress

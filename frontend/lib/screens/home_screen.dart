@@ -6,6 +6,8 @@ import 'chat_screen.dart';
 import 'profile_screen.dart';
 import 'leaderboard_screen.dart';
 import '../services/auth_service.dart';
+import '../widgets/language_flag_button.dart';
+import '../widgets/language_selector_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -54,6 +56,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Show language selector and refresh on change
+  void _showLanguageSelector() {
+    showLanguageSelector(
+      context,
+      _targetLanguage,
+      (newLanguage) {
+        // Refresh the entire screen with new language
+        refreshLanguage();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     /*
@@ -92,6 +106,14 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: _currentIndex == 0 ? AppBar(
         title: const Text('AI Language Tutor'),
         actions: [
+          // Language Switcher
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: LanguageFlagButton(
+              languageCode: _targetLanguage,
+              onTap: _showLanguageSelector,
+            ),
+          ),
           // Leaderboard button
           IconButton(
             icon: const Icon(Icons.leaderboard_outlined),

@@ -80,7 +80,9 @@ class GamificationUpdate(BaseModel):
 # XP Calculation Constants
 XP_REWARDS = {
     'lesson_complete': 10,
+    'lesson_completion': 10,  # Alias for lesson_complete
     'perfect_lesson': 15,  # No mistakes
+    'quick_lesson': 3,  # Complete in under 5 minutes
     'daily_goal_met': 5,
     'streak_milestone_7': 20,
     'streak_milestone_30': 50,

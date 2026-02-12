@@ -113,7 +113,8 @@ async def get_me(current_user: UserInDB = Depends(get_current_user)):
         target_language=current_user.target_language,
         proficiency_level=current_user.proficiency_level,
         display_name=current_user.display_name,
-        avatar_url=current_user.avatar_url
+        avatar_url=current_user.avatar_url,
+        language_progress=current_user.language_progress
     )
 
 @router.patch("/me", response_model=UserResponse)
