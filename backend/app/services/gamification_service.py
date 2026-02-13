@@ -22,31 +22,56 @@ class GamificationService:
     
     @staticmethod
     async def get_or_create_user_gamification(user_id: str) -> UserGamification:
-        """Get user gamification data or create if doesn't exist"""
-        user_obj_id = ObjectId(user_id)
-        
-        # Try to find existing gamification data
-        gam_data = await db.user_gamifications.find_one({"user_id": user_obj_id})
+        """Get existing gamification profile or create new one"""
+        # Ensure we check both ObjectId and string formats to prevent duplicates
+        try:
+            uid_obj = ObjectId(user_id)
+            uid_str = str(user_id)
+        except:
+            uid_obj = None
+            uid_str = str(user_id)
+
+        query = {"$or": [{"user_id": uid_str}]}
+        if uid_obj:
+            query["$or"].append({"user_id": uid_obj})
+
+        gam_data = await db.user_gamifications.find_one(query)
         
         if gam_data:
-            return UserGamification(**gam_data)
+            gam = UserGamification(**gam_data)
+            gam.id = str(gam_data['_id'])  # Set id from MongoDB _id
+            return gam
         
-        # Create new gamification data
-        new_gam = UserGamification(user_id=user_obj_id)
-        result = await db.user_gamifications.insert_one(new_gam.dict(by_alias=True, exclude={'id'}))
-        new_gam.id = result.inserted_id
+        # Create new profile if none found
+        # Prefer storing as ObjectId if valid, else string
+        uid_to_save = uid_obj if uid_obj else uid_str
         
+        new_gam = UserGamification(
+            user_id=str(uid_to_save), # Model expects str
+            xp=0,
+            level=1,
+            hearts=5,
+            gems=0
+        )
+        
+        # Insert into DB
+        gam_dict = new_gam.dict(by_alias=True, exclude={'id'})
+        gam_dict['user_id'] = uid_to_save # Store as ObjectId in DB if possible
+        
+        result = await db.user_gamifications.insert_one(gam_dict)
+        new_gam.id = str(result.inserted_id)
         return new_gam
     
     @staticmethod
-    async def award_xp(user_id: str, xp_amount: int, reason: str = "") -> Dict:
+    async def award_xp(user_id: str, xp_amount: int, reason: str = "", gam: Optional[UserGamification] = None) -> Dict:
         """
         Award XP to a user and check for level ups and achievements.
         
         Returns:
             Dictionary with updates (xp_gained, old_level, new_level, achievements_earned)
         """
-        gam = await GamificationService.get_or_create_user_gamification(user_id)
+        if not gam:
+            gam = await GamificationService.get_or_create_user_gamification(user_id)
         
         old_xp = gam.xp
         old_level = gam.level
@@ -95,10 +120,11 @@ class GamificationService:
         gam.level = calculate_level_from_xp(gam.xp)
         
         # Save to database
-        await db.user_gamifications.update_one(
-            {"user_id": ObjectId(user_id)},
-            {"$set": gam.dict(by_alias=True, exclude={'id'})}
-        )
+        if gam.id:
+            await db.user_gamifications.update_one(
+                {"_id": ObjectId(gam.id)},
+                {"$set": gam.dict(by_alias=True, exclude={'id'})}
+            )
         
         return {
             "xp_gained": xp_amount,
@@ -122,7 +148,7 @@ class GamificationService:
         }
     
     @staticmethod
-    async def update_streak(user_id: str) -> Dict:
+    async def update_streak(user_id: str, gam: Optional[UserGamification] = None) -> Dict:
         """
         Update user's streak based on practice activity.
         Called when user completes a lesson.
@@ -130,7 +156,8 @@ class GamificationService:
         Returns:
             Dictionary with streak info
         """
-        gam = await GamificationService.get_or_create_user_gamification(user_id)
+        if not gam:
+            gam = await GamificationService.get_or_create_user_gamification(user_id)
         
         today = datetime.utcnow().date()
         
@@ -151,11 +178,11 @@ class GamificationService:
                 
                 # Check for streak milestone achievements
                 if gam.streak_count == 7:
-                    await GamificationService.award_xp(user_id, XP_REWARDS['streak_milestone_7'], "7-day streak")
+                    await GamificationService.award_xp(user_id, XP_REWARDS['streak_milestone_7'], "7-day streak", gam=gam)
                 elif gam.streak_count == 30:
-                    await GamificationService.award_xp(user_id, XP_REWARDS['streak_milestone_30'], "30-day streak")
+                    await GamificationService.award_xp(user_id, XP_REWARDS['streak_milestone_30'], "30-day streak", gam=gam)
                 elif gam.streak_count == 100:
-                    await GamificationService.award_xp(user_id, XP_REWARDS['streak_milestone_100'], "100-day streak")
+                    await GamificationService.award_xp(user_id, XP_REWARDS['streak_milestone_100'], "100-day streak", gam=gam)
             
             # Practiced today already - just update timestamp
             elif last_practice == today:
@@ -168,10 +195,11 @@ class GamificationService:
         
         gam.updated_at = datetime.utcnow()
         
-        await db.user_gamifications.update_one(
-            {"user_id": ObjectId(user_id)},
-            {"$set": gam.dict(by_alias=True, exclude={'id'})}
-        )
+        if gam.id:
+            await db.user_gamifications.update_one(
+                {"_id": ObjectId(gam.id)},
+                {"$set": gam.dict(by_alias=True, exclude={'id'})}
+            )
         
         return {
             "streak_count": gam.streak_count,
@@ -199,7 +227,7 @@ class GamificationService:
             gam.updated_at = datetime.utcnow()
             
             await db.user_gamifications.update_one(
-                {"user_id": ObjectId(user_id)},
+                {"_id": ObjectId(gam.id)},
                 {"$set": gam.dict(by_alias=True, exclude={'id'})}
             )
         
@@ -257,7 +285,7 @@ class GamificationService:
         gam.updated_at = datetime.utcnow()
         
         await db.user_gamifications.update_one(
-            {"user_id": ObjectId(user_id)},
+            {"_id": ObjectId(gam.id)},
             {"$set": gam.dict(by_alias=True, exclude={'id'})}
         )
         
@@ -332,20 +360,15 @@ class GamificationService:
                 )
         
         # Award XP (this handles level ups and achievements)
-        xp_result = await GamificationService.award_xp(user_id, total_xp, "lesson_completion")
+        # Passing 'gam' ensures award_xp updates the SAME object we are using here
+        xp_result = await GamificationService.award_xp(user_id, total_xp, "lesson_completion", gam=gam)
         
         # Update streak
-        streak_result = await GamificationService.update_streak(user_id)
+        # Passing 'gam' ensures update_streak updates the SAME object
+        streak_result = await GamificationService.update_streak(user_id, gam=gam)
         
-        # Save gamification updates
-        gam.updated_at = datetime.utcnow()
-        await db.user_gamifications.update_one(
-            {"user_id": ObjectId(user_id)},
-            {"$set": gam.dict(by_alias=True, exclude={'id'})}
-        )
-        
-        # Refresh gam data after all updates
-        gam = await GamificationService.get_or_create_user_gamification(user_id)
+        # All updates are saved to DB inside award_xp and update_streak
+        # So we don't need a redundant update_one here anymore
         
         return {
             **xp_result,
@@ -379,7 +402,16 @@ class GamificationService:
         gamifications = await db.user_gamifications.find({}).to_list(length=None)
         
         # Get user data for display names
-        user_ids = [g['user_id'] for g in gamifications]
+        user_ids_raw = [g['user_id'] for g in gamifications]
+        
+        from bson import ObjectId
+        user_ids = []
+        for uid in user_ids_raw:
+            if isinstance(uid, str) and ObjectId.is_valid(uid):
+                user_ids.append(ObjectId(uid))
+            elif isinstance(uid, ObjectId):
+                user_ids.append(uid)
+                
         users = await db.users.find({"_id": {"$in": user_ids}}).to_list(length=None)
         user_map = {str(u['_id']): u for u in users}
         

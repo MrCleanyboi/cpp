@@ -53,41 +53,35 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
   }
 
   Future<void> _loadLeaderboard() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
     try {
-      // final data = await _gamificationService.getLeaderboard(
-      //   type: _currentType,
-      //   userId: widget.userId,
-      // );
-      
-      // MOCK DATA FOR SCREENSHOT
-      await Future.delayed(const Duration(seconds: 1)); // Simulate loading
-      
-      // Define directly as the correct type to avoid casting errors
-      final List<Map<String, dynamic>> mockRankings = [
-          {'rank': 1, 'display_name': 'Sarah Smith', 'level': 12, 'xp': 2450},
-          {'rank': 2, 'display_name': 'Mike Johnson', 'level': 11, 'xp': 2340},
-          {'rank': 3, 'display_name': 'Emily Davis', 'level': 10, 'xp': 2100},
-          {'rank': 4, 'display_name': 'Alex Wilson', 'level': 9, 'xp': 1950},
-          {'rank': 5, 'display_name': 'Jessica Brown', 'level': 9, 'xp': 1890},
-          {'rank': 6, 'display_name': 'David Miller', 'level': 8, 'xp': 1750},
-          {'rank': 7, 'display_name': 'testuser', 'level': 5, 'xp': 450},
-          {'rank': 8, 'display_name': 'Daniel Taylor', 'level': 4, 'xp': 320},
-          {'rank': 9, 'display_name': 'Laura Anderson', 'level': 3, 'xp': 210},
-          {'rank': 10, 'display_name': 'Kevin Thomas', 'level': 2, 'xp': 150},
-      ];
+      print('DEBUG: Fetching leaderboard type: $_currentType');
+      final data = await _gamificationService.getLeaderboard(
+        type: _currentType,
+        userId: widget.userId,
+      );
       
       if (mounted) {
         setState(() {
-          _entries = mockRankings;
+          // The API returns { "type": ..., "entries": [...], ... }
+          // We need to extract "entries" and ensure it's a list of maps
+          final entriesList = data['entries'] as List<dynamic>;
+          _entries = entriesList.map((e) => e as Map<String, dynamic>).toList();
           _isLoading = false;
         });
       }
     } catch (e) {
       print('Error loading leaderboard: $e');
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          // Keep empty entries on error or show snackbar
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load leaderboard: $e')),
+        );
       }
     }
   }

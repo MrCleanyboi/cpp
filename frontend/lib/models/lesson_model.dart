@@ -50,552 +50,365 @@ class Lesson {
   });
 }
 
-// Hardcoded data source for now - COMPLETE UNIT 1 FOR ALL 3 LANGUAGES
+// Data Source with Dynamic Generation
 class LessonData {
-  static final Map<String, Lesson> lessons = {
-    // ==================== FRENCH UNIT 1 (4 Lessons) ====================
-    'fr_beginner_1_1': Lesson(
-      id: 'fr_beginner_1_1',
-      title: 'Bonjour!',
-      description: 'Learn basic French greetings',
+  static final Map<String, Lesson> lessons = _generateLessons();
+
+  static Map<String, Lesson> _generateLessons() {
+    final Map<String, Lesson> data = {};
+    final languages = ['de', 'fr', 'es'];
+
+    // 1. Generate Placeholders for ALL 9 Units (3 Lessons each)
+    for (var lang in languages) {
+      for (var u = 1; u <= 9; u++) {
+        for (var l = 1; l <= 3; l++) {
+          final id = '${lang}_u${u}_l${l}';
+          data[id] = Lesson(
+            id: id,
+            title: 'Lesson $u-$l', // Fallback title
+            description: 'This lesson content is coming soon.',
+            exercises: [
+              MultipleChoiceExercise(
+                id: '${id}_e1',
+                question: 'This is a placeholder exercise.',
+                options: ['Option A', 'Option B', 'Option C'],
+                answer: 'Option A',
+              ),
+            ],
+          );
+        }
+      }
+    }
+
+    // 2. Overwrite with Detailed Content for German Beginner
+    _addGermanUnit1(data);
+    _addGermanUnit2(data); // Unit 2: Family & Friends
+    _addGermanUnit3(data); // Unit 3: My Home
+
+    // 3. Overwrite with Detailed Content for Other Unit 1s
+    _addFrenchUnit1(data);
+    _addSpanishUnit1(data);
+
+    return data;
+  }
+
+  // ==================== GERMAN UNIT 1: THE CAFÉ ====================
+  static void _addGermanUnit1(Map<String, Lesson> data) {
+    // Lesson 1.1
+    data['de_u1_l1'] = Lesson(
+      id: 'de_u1_l1',
+      title: 'Ordering Coffee',
+      description: 'Basic ordering phrases',
       exercises: [
         MultipleChoiceExercise(
-          id: 'fr_b1_e1',
-          question: 'How do you say "Hello" in French?',
-          options: ['Bonjour', 'Merci', 'Au revoir', 'Bonsoir'],
-          answer: 'Bonjour',
+          id: 'de_u1_l1_e1',
+          question: 'How do you say "I would like" inside a café?',
+          options: ['Ich möchte', 'Ich bin', 'Hallo', 'Tschüss'],
+          answer: 'Ich möchte',
         ),
         MultipleChoiceExercise(
-          id: 'fr_b1_e2',
-          question: 'How do you say "Goodbye" in French?',
-          options: ['Bonjour', 'Merci', 'Au revoir', 'Salut'],
-          answer: 'Au revoir',
+          id: 'de_u1_l1_e2',
+          question: 'Translate: "A coffee, please"',
+          options: ['Einen Kaffee, bitte', 'Ein Wasser', 'Bitte schön', 'Danke'],
+          answer: 'Einen Kaffee, bitte',
         ),
         TranslateExercise(
-          id: 'fr_b1_e3',
-          question: 'Translate to French: "Good morning"',
-          answer: 'Bonjour',
+          id: 'de_u1_l1_e3',
+          question: 'Translate to German: "with milk"',
+          answer: 'mit Milch',
         ),
         MultipleChoiceExercise(
-          id: 'fr_b1_e4',
-          question: 'How do you say "Thank you" in French?',
-          options: ['Bonjour', 'Merci', 'S\'il vous plaît', 'Pardon'],
-          answer: 'Merci',
-        ),
-        TranslateExercise(
-          id: 'fr_b1_e5',
-          question: 'Translate to French: "My name is..."',
-          answer: 'Je m\'appelle',
-        ),
-        MultipleChoiceExercise(
-          id: 'fr_b1_e6',
-          question: 'How do you say "Please" in French?',
-          options: ['Merci', 'S\'il vous plaît', 'Bonjour', 'Pardon'],
-          answer: 'S\'il vous plaît',
-        ),
-        TranslateExercise(
-          id: 'fr_b1_e7',
-          question: 'Translate to French: "How are you?"',
-          answer: 'Comment allez-vous',
-        ),
-        MultipleChoiceExercise(
-          id: 'fr_b1_e8',
-          question: 'How do you say "Excuse me" in French?',
-          options: ['Excusez-moi', 'Merci', 'Bonjour', 'S\'il vous plaît'],
-          answer: 'Excusez-moi',
+          id: 'de_u1_l1_e4',
+          question: 'Which word means "sugar"?',
+          options: ['Zucker', 'Salz', 'Milch', 'Wasser'],
+          answer: 'Zucker',
         ),
       ],
-    ),
-
-    'fr_beginner_1_2': Lesson(
-      id: 'fr_beginner_1_2',
-      title: 'Je m\'appelle...',
-      description: 'Introduce yourself in French',
-      exercises: [
-        TranslateExercise(
-          id: 'fr_b2_e1',
-          question: 'Translate to French: "I am"',
-          answer: 'Je suis',
-        ),
-        MultipleChoiceExercise(
-          id: 'fr_b2_e2',
-          question: 'How do you say "Nice to meet you" in French?',
-          options: ['Enchanté', 'Merci', 'Au revoir', 'Bonjour'],
-          answer: 'Enchanté',
-        ),
-        TranslateExercise(
-          id: 'fr_b2_e3',
-          question: 'Translate to French: "I am a student"',
-          answer: 'Je suis étudiant',
-        ),
-        MultipleChoiceExercise(
-          id: 'fr_b2_e4',
-          question: 'What does "Comment tu t\'appelles?" mean?',
-          options: ['What is your name?', 'How are you?', 'Where are you from?', 'Goodbye'],
-          answer: 'What is your name?',
-        ),
-        TranslateExercise(
-          id: 'fr_b2_e5',
-          question: 'Translate to French: "I am from Paris"',
-          answer: 'Je suis de Paris',
-        ),
-        MultipleChoiceExercise(
-          id: 'fr_b2_e6',
-          question: 'How do you ask "And you?" in French?',
-          options: ['Et toi?', 'Merci', 'Oui', 'Non'],
-          answer: 'Et toi?',
-        ),
-      ],
-    ),
-
-    'fr_beginner_1_3': Lesson(
-      id: 'fr_beginner_1_3',
-      title: 'Phrases Courantes',
-      description: 'Essential everyday French phrases',
+    );
+     // Lesson 1.2
+    data['de_u1_l2'] = Lesson(
+      id: 'de_u1_l2',
+      title: 'The Menu',
+      description: 'Reading the card',
       exercises: [
         MultipleChoiceExercise(
-          id: 'fr_b3_e1',
-          question: 'How do you say "Yes" in French?',
-          options: ['Oui', 'Non', 'Peut-être', 'Merci'],
-          answer: 'Oui',
-        ),
-        MultipleChoiceExercise(
-          id: 'fr_b3_e2',
-          question: 'How do you say "No" in French?',
-          options: ['Oui', 'Non', 'Si', 'Jamais'],
-          answer: 'Non',
+          id: 'de_u1_l2_e1',
+          question: 'What is "Das Frühstück"?',
+          options: ['Breakfast', 'Lunch', 'Dinner', 'Snack'],
+          answer: 'Breakfast',
         ),
         TranslateExercise(
-          id: 'fr_b3_e3',
-          question: 'Translate to French: "I don\'t understand"',
-          answer: 'Je ne comprends pas',
+          id: 'de_u1_l2_e2',
+          question: 'Translate: "The menu"',
+          answer: 'Die Speisekarte',
         ),
         MultipleChoiceExercise(
-          id: 'fr_b3_e4',
-          question: 'What does "Parlez-vous anglais?" mean?',
-          options: ['Do you speak English?', 'Do you understand?', 'Where are you?', 'What time is it?'],
-          answer: 'Do you speak English?',
-        ),
-        TranslateExercise(
-          id: 'fr_b3_e5',
-          question: 'Translate to French: "See you soon"',
-          answer: 'À bientôt',
-        ),
-        MultipleChoiceExercise(
-          id: 'fr_b3_e6',
-          question: 'How do you say "Of course" in French?',
-          options: ['Bien sûr', 'Jamais', 'Peut-être', 'Toujours'],
-          answer: 'Bien sûr',
+          id: 'de_u1_l2_e3',
+          question: 'What does "Vegetarisch" mean?',
+          options: ['Vegetarian', 'Vegan', 'Meat', 'Fish'],
+          answer: 'Vegetarian',
         ),
       ],
-    ),
-
-    'fr_beginner_1_4': Lesson(
-      id: 'fr_beginner_1_4',
-      title: 'Questions Simples',
-      description: 'Ask basic questions in French',
+    );
+     // Lesson 1.3
+    data['de_u1_l3'] = Lesson(
+      id: 'de_u1_l3',
+      title: 'Paying the Bill',
+      description: 'Handling money',
       exercises: [
-        TranslateExercise(
-          id: 'fr_b4_e1',
-          question: 'Translate to French: "Where is...?"',
-          answer: 'Où est',
+         MultipleChoiceExercise(
+          id: 'de_u1_l3_e1',
+          question: 'How do you say "The bill, please"?',
+          options: ['Die Rechnung, bitte', 'Ich zahle nicht', 'Hallo', 'Danke'],
+          answer: 'Die Rechnung, bitte',
         ),
         MultipleChoiceExercise(
-          id: 'fr_b4_e2',
-          question: 'How do you say "What?" in French?',
-          options: ['Quoi?', 'Qui?', 'Où?', 'Quand?'],
-          answer: 'Quoi?',
+          id: 'de_u1_l3_e2',
+          question: 'Which phrase means "Is service included?"',
+          options: ['Ist Service inklusive?', 'Haben Sie?', 'Wo ist?', 'Danke'],
+          answer: 'Ist Service inklusive?',
         ),
         TranslateExercise(
-          id: 'fr_b4_e3',
-          question: 'Translate to French: "Why?"',
-          answer: 'Pourquoi',
-        ),
-        MultipleChoiceExercise(
-          id: 'fr_b4_e4',
-          question: 'What does "Combien?" mean?',
-          options: ['How much/many?', 'Why?', 'When?', 'Where?'],
-          answer: 'How much/many?',
-        ),
-        TranslateExercise(
-          id: 'fr_b4_e5',
-          question: 'Translate to French: "When?"',
-          answer: 'Quand',
-        ),
-        MultipleChoiceExercise(
-          id: 'fr_b4_e6',
-          question: 'How do you ask "Can you help me?" in French?',
-          options: ['Pouvez-vous m\'aider?', 'Où est?', 'Comment?', 'Pourquoi?'],
-          answer: 'Pouvez-vous m\'aider?',
+          id: 'de_u1_l3_e3',
+          question: 'Translate: "Tips"',
+          answer: 'Trinkgeld',
         ),
       ],
-    ),
+    );
+  }
 
-    // ==================== GERMAN UNIT 1 (4 Lessons) ====================
-    'de_beginner_1_1': Lesson(
-      id: 'de_beginner_1_1',
-      title: 'Hallo!',
-      description: 'Learn basic German greetings',
+  // ==================== GERMAN UNIT 2: FAMILY & FRIENDS ====================
+  static void _addGermanUnit2(Map<String, Lesson> data) {
+    // Lesson 2.1: Family Members
+    data['de_u2_l1'] = Lesson(
+      id: 'de_u2_l1',
+      title: 'Family Members',
+      description: 'Mom, Dad, Siblings',
       exercises: [
         MultipleChoiceExercise(
-          id: 'de_b1_e1',
-          question: 'How do you say "Hello" in German?',
-          options: ['Hallo', 'Danke', 'Tschüss', 'Bitte'],
-          answer: 'Hallo',
+          id: 'de_u2_l1_e1',
+          question: 'How do you say "Mother"?',
+          options: ['Mutter', 'Vater', 'Bruder', 'Schwester'],
+          answer: 'Mutter',
         ),
         MultipleChoiceExercise(
-          id: 'de_b1_e2',
-          question: 'How do you say "Goodbye" in German?',
-          options: ['Hallo', 'Danke', 'Tschüss', 'Bitte'],
-          answer: 'Tschüss',
+          id: 'de_u2_l1_e2',
+          question: 'How do you say "Father"?',
+          options: ['Vater', 'Mutter', 'Onkel', 'Tante'],
+          answer: 'Vater',
         ),
         TranslateExercise(
-          id: 'de_b1_e3',
-          question: 'Translate to German: "Good morning"',
-          answer: 'Guten Morgen',
+          id: 'de_u2_l1_e3',
+          question: 'Translate: "Brother and Sister"',
+          answer: 'Bruder und Schwester',
         ),
         MultipleChoiceExercise(
-          id: 'de_b1_e4',
-          question: 'How do you say "Thank you" in German?',
-          options: ['Hallo', 'Danke', 'Bitte', 'Tschüss'],
-          answer: 'Danke',
-        ),
-        TranslateExercise(
-          id: 'de_b1_e5',
-          question: 'Translate to German: "My name is..."',
-          answer: 'Mein Name ist',
-        ),
-        MultipleChoiceExercise(
-          id: 'de_b1_e6',
-          question: 'How do you say "Please" in German?',
-          options: ['Danke', 'Bitte', 'Hallo', 'Entschuldigung'],
-          answer: 'Bitte',
-        ),
-        TranslateExercise(
-          id: 'de_b1_e7',
-          question: 'Translate to German: "How are you?"',
-          answer: 'Wie geht es dir',
-        ),
-        MultipleChoiceExercise(
-          id: 'de_b1_e8',
-          question: 'How do you say "Excuse me" in German?',
-          options: ['Entschuldigung', 'Danke', 'Hallo', 'Bitte'],
-          answer: 'Entschuldigung',
+          id: 'de_u2_l1_e4',
+          question: 'What means "Parents"?',
+          options: ['Eltern', 'Kinder', 'Großeltern', 'Freunde'],
+          answer: 'Eltern',
         ),
       ],
-    ),
-
-    'de_beginner_1_2': Lesson(
-      id: 'de_beginner_1_2',
-      title: 'Ich bin...',
-      description: 'Introduce yourself in German',
-      exercises: [
-        TranslateExercise(
-          id: 'de_b2_e1',
-          question: 'Translate to German: "I am"',
-          answer: 'Ich bin',
-        ),
-        MultipleChoiceExercise(
-          id: 'de_b2_e2',
-          question: 'How do you say "Nice to meet you" in German?',
-          options: ['Freut mich', 'Danke', 'Tschüss', 'Hallo'],
-          answer: 'Freut mich',
-        ),
-        TranslateExercise(
-          id: 'de_b2_e3',
-          question: 'Translate to German: "I am a teacher"',
-          answer: 'Ich bin Lehrer',
-        ),
-        MultipleChoiceExercise(
-          id: 'de_b2_e4',
-          question: 'What does "Wie heißt du?" mean?',
-          options: ['What is your name?', 'How are you?', 'Where are you from?', 'Goodbye'],
-          answer: 'What is your name?',
-        ),
-        TranslateExercise(
-          id: 'de_b2_e5',
-          question: 'Translate to German: "I am from Berlin"',
-          answer: 'Ich bin aus Berlin',
-        ),
-        MultipleChoiceExercise(
-          id: 'de_b2_e6',
-          question: 'How do you ask "And you?" in German?',
-          options: ['Und du?', 'Danke', 'Ja', 'Nein'],
-          answer: 'Und du?',
-        ),
-      ],
-    ),
-
-    'de_beginner_1_3': Lesson(
-      id: 'de_beginner_1_3',
-      title: 'Alltägliche Ausdrücke',
-      description: 'Essential everyday German phrases',
+    );
+    // Lesson 2.2: Describing People
+    data['de_u2_l2'] = Lesson(
+      id: 'de_u2_l2',
+      title: 'Describing People',
+      description: 'Is he tall or short?',
       exercises: [
         MultipleChoiceExercise(
-          id: 'de_b3_e1',
-          question: 'How do you say "Yes" in German?',
-          options: ['Ja', 'Nein', 'Vielleicht', 'Danke'],
-          answer: 'Ja',
-        ),
-        MultipleChoiceExercise(
-          id: 'de_b3_e2',
-          question: 'How do you say "No" in German?',
-          options: ['Ja', 'Nein', 'Doch', 'Nie'],
-          answer: 'Nein',
+          id: 'de_u2_l2_e1',
+          question: 'Translate: "High / Tall"',
+          options: ['Groß', 'Klein', 'Dick', 'Dünn'],
+          answer: 'Groß',
         ),
         TranslateExercise(
-          id: 'de_b3_e3',
-          question: 'Translate to German: "I don\'t understand"',
-          answer: 'Ich verstehe nicht',
+          id: 'de_u2_l2_e2',
+          question: 'Translate to German: "Small"',
+          answer: 'Klein',
         ),
         MultipleChoiceExercise(
-          id: 'de_b3_e4',
-          question: 'What does "Sprechen Sie Englisch?" mean?',
-          options: ['Do you speak English?', 'Do you understand?', 'Where are you?', 'What time is it?'],
-          answer: 'Do you speak English?',
+          id: 'de_u2_l2_e3',
+          question: 'How do you say "Friendly"?',
+          options: ['Freundlich', 'Böse', 'Traurig', 'Müde'],
+          answer: 'Freundlich',
         ),
         TranslateExercise(
-          id: 'de_b3_e5',
-          question: 'Translate to German: "See you later"',
-          answer: 'Bis später',
-        ),
-        MultipleChoiceExercise(
-          id: 'de_b3_e6',
-          question: 'How do you say "Of course" in German?',
-          options: ['Natürlich', 'Nie', 'Vielleicht', 'Immer'],
-          answer: 'Natürlich',
+          id: 'de_u2_l2_e4',
+          question: 'Translate: "Beautiful"',
+          answer: 'Schön',
         ),
       ],
-    ),
-
-    'de_beginner_1_4': Lesson(
-      id: 'de_beginner_1_4',
-      title: 'Einfache Fragen',
-      description: 'Ask basic questions in German',
-      exercises: [
-        TranslateExercise(
-          id: 'de_b4_e1',
-          question: 'Translate to German: "Where is...?"',
-          answer: 'Wo ist',
-        ),
-        MultipleChoiceExercise(
-          id: 'de_b4_e2',
-          question: 'How do you say "What?" in German?',
-          options: ['Was?', 'Wer?', 'Wo?', 'Wann?'],
-          answer: 'Was?',
-        ),
-        TranslateExercise(
-          id: 'de_b4_e3',
-          question: 'Translate to German: "Why?"',
-          answer: 'Warum',
-        ),
-        MultipleChoiceExercise(
-          id: 'de_b4_e4',
-          question: 'What does "Wie viel?" mean?',
-          options: ['How much/many?', 'Why?', 'When?', 'Where?'],
-          answer: 'How much/many?',
-        ),
-        TranslateExercise(
-          id: 'de_b4_e5',
-          question: 'Translate to German: "When?"',
-          answer: 'Wann',
-        ),
-        MultipleChoiceExercise(
-          id: 'de_b4_e6',
-          question: 'How do you ask "Can you help me?" in German?',
-          options: ['Können Sie mir helfen?', 'Wo ist?', 'Wie?', 'Warum?'],
-          answer: 'Können Sie mir helfen?',
-        ),
-      ],
-    ),
-
-    // ==================== SPANISH UNIT 1 (4 Lessons) ====================
-    'es_beginner_1_1': Lesson(
-      id: 'es_beginner_1_1',
-      title: '¡Hola!',
-      description: 'Learn basic Spanish greetings',
+    );
+    // Lesson 2.3: Pets
+    data['de_u2_l3'] = Lesson(
+      id: 'de_u2_l3',
+      title: 'Pets',
+      description: 'Cats & Dogs',
       exercises: [
         MultipleChoiceExercise(
-          id: 'es_b1_e1',
-          question: 'How do you say "Hello" in Spanish?',
-          options: ['Hola', 'Gracias', 'Adiós', 'Por favor'],
-          answer: 'Hola',
+          id: 'de_u2_l3_e1',
+          question: 'How do you say "Dog"?',
+          options: ['Hund', 'Katze', 'Maus', 'Vogel'],
+          answer: 'Hund',
         ),
         MultipleChoiceExercise(
-          id: 'es_b1_e2',
-          question: 'How do you say "Goodbye" in Spanish?',
-          options: ['Hola', 'Gracias', 'Adiós', 'Buenos días'],
-          answer: 'Adiós',
+          id: 'de_u2_l3_e2',
+          question: 'How do you say "Cat"?',
+          options: ['Katze', 'Hund', 'Pferd', 'Schwein'],
+          answer: 'Katze',
         ),
         TranslateExercise(
-          id: 'es_b1_e3',
-          question: 'Translate to Spanish: "Good morning"',
-          answer: 'Buenos días',
-        ),
-        MultipleChoiceExercise(
-          id: 'es_b1_e4',
-          question: 'How do you say "Thank you" in Spanish?',
-          options: ['Hola', 'Gracias', 'Por favor', 'Perdón'],
-          answer: 'Gracias',
-        ),
-        TranslateExercise(
-          id: 'es_b1_e5',
-          question: 'Translate to Spanish: "My name is..."',
-          answer: 'Me llamo',
-        ),
-        MultipleChoiceExercise(
-          id: 'es_b1_e6',
-          question: 'How do you say "Please" in Spanish?',
-          options: ['Gracias', 'Por favor', 'Hola', 'Perdón'],
-          answer: 'Por favor',
-        ),
-        TranslateExercise(
-          id: 'es_b1_e7',
-          question: 'Translate to Spanish: "How are you?"',
-          answer: 'Cómo estás',
-        ),
-        MultipleChoiceExercise(
-          id: 'es_b1_e8',
-          question: 'How do you say "Excuse me" in Spanish?',
-          options: ['Perdón', 'Gracias', 'Hola', 'Por favor'],
-          answer: 'Perdón',
+          id: 'de_u2_l3_e3',
+          question: 'Translate: "I have a pet"',
+          answer: 'Ich habe ein Haustier',
         ),
       ],
-    ),
+    );
+  }
 
-    'es_beginner_1_2': Lesson(
-      id: 'es_beginner_1_2',
-      title: 'Me llamo...',
-      description: 'Introduce yourself in Spanish',
-      exercises: [
-        TranslateExercise(
-          id: 'es_b2_e1',
-          question: 'Translate to Spanish: "I am"',
-          answer: 'Soy',
-        ),
-        MultipleChoiceExercise(
-          id: 'es_b2_e2',
-          question: 'How do you say "Nice to meet you" in Spanish?',
-          options: ['Mucho gusto', 'Gracias', 'Adiós', 'Hola'],
-          answer: 'Mucho gusto',
-        ),
-        TranslateExercise(
-          id: 'es_b2_e3',
-          question: 'Translate to Spanish: "I am a student"',
-          answer: 'Soy estudiante',
-        ),
-        MultipleChoiceExercise(
-          id: 'es_b2_e4',
-          question: 'What does "¿Cómo te llamas?" mean?',
-          options: ['What is your name?', 'How are you?', 'Where are you from?', 'Goodbye'],
-          answer: 'What is your name?',
-        ),
-        TranslateExercise(
-          id: 'es_b2_e5',
-          question: 'Translate to Spanish: "I am from Madrid"',
-          answer: 'Soy de Madrid',
-        ),
-        MultipleChoiceExercise(
-          id: 'es_b2_e6',
-          question: 'How do you ask "And you?" in Spanish?',
-          options: ['¿Y tú?', 'Gracias', 'Sí', 'No'],
-          answer: '¿Y tú?',
-        ),
-      ],
-    ),
-
-    'es_beginner_1_3': Lesson(
-      id: 'es_beginner_1_3',
-      title: 'Frases Comunes',
-      description: 'Essential everyday Spanish phrases',
+  // ==================== GERMAN UNIT 3: MY HOME ====================
+  static void _addGermanUnit3(Map<String, Lesson> data) {
+    // Lesson 3.1: Rooms
+    data['de_u3_l1'] = Lesson(
+      id: 'de_u3_l1',
+      title: 'Rooms',
+      description: 'Kitchen, Bath, Bedroom',
       exercises: [
         MultipleChoiceExercise(
-          id: 'es_b3_e1',
-          question: 'How do you say "Yes" in Spanish?',
-          options: ['Sí', 'No', 'Quizás', 'Gracias'],
-          answer: 'Sí',
+          id: 'de_u3_l1_e1',
+          question: 'How do you say "The Kitchen"?',
+          options: ['Die Küche', 'Das Bad', 'Der Flur', 'Das Zimmer'],
+          answer: 'Die Küche',
         ),
         MultipleChoiceExercise(
-          id: 'es_b3_e2',
-          question: 'How do you say "No" in Spanish?',
-          options: ['Sí', 'No', 'Tal vez', 'Nunca'],
-          answer: 'No',
+          id: 'de_u3_l1_e2',
+          question: 'What is "Das Schlafzimmer"?',
+          options: ['Bedroom', 'Living room', 'Bathroom', 'Kitchen'],
+          answer: 'Bedroom',
         ),
         TranslateExercise(
-          id: 'es_b3_e3',
-          question: 'Translate to Spanish: "I don\'t understand"',
-          answer: 'No entiendo',
-        ),
-        MultipleChoiceExercise(
-          id: 'es_b3_e4',
-          question: 'What does "¿Hablas inglés?" mean?',
-          options: ['Do you speak English?', 'Do you understand?', 'Where are you?', 'What time is it?'],
-          answer: 'Do you speak English?',
-        ),
-        TranslateExercise(
-          id: 'es_b3_e5',
-          question: 'Translate to Spanish: "See you soon"',
-          answer: 'Hasta pronto',
-        ),
-        MultipleChoiceExercise(
-          id: 'es_b3_e6',
-          question: 'How do you say "Of course" in Spanish?',
-          options: ['Claro', 'Nunca', 'Quizás', 'Siempre'],
-          answer: 'Claro',
+          id: 'de_u3_l1_e3',
+          question: 'Translate: "Living room"',
+          answer: 'Wohnzimmer',
         ),
       ],
-    ),
-
-    'es_beginner_1_4': Lesson(
-      id: 'es_beginner_1_4',
-      title: 'Preguntas Básicas',
-      description: 'Ask basic questions in Spanish',
+    );
+    // Lesson 3.2: Furniture
+    data['de_u3_l2'] = Lesson(
+      id: 'de_u3_l2',
+      title: 'Furniture',
+      description: 'Table, Chair, Bed',
       exercises: [
         TranslateExercise(
-          id: 'es_b4_e1',
-          question: 'Translate to Spanish: "Where is...?"',
-          answer: 'Dónde está',
+          id: 'de_u3_l2_e1',
+          question: 'Translate: "The Table"',
+          answer: 'Der Tisch',
         ),
         MultipleChoiceExercise(
-          id: 'es_b4_e2',
-          question: 'How do you say "What?" in Spanish?',
-          options: ['¿Qué?', '¿Quién?', '¿Dónde?', '¿Cuándo?'],
-          answer: '¿Qué?',
-        ),
-        TranslateExercise(
-          id: 'es_b4_e3',
-          question: 'Translate to Spanish: "Why?"',
-          answer: 'Por qué',
+          id: 'de_u3_l2_e2',
+          question: 'What is "Der Stuhl"?',
+          options: ['The Chair', 'The Sofa', 'The Bed', 'The Lamp'],
+          answer: 'The Chair',
         ),
         MultipleChoiceExercise(
-          id: 'es_b4_e4',
-          question: 'What does "¿Cuánto?" mean?',
-          options: ['How much/many?', 'Why?', 'When?', 'Where?'],
-          answer: 'How much/many?',
-        ),
-        TranslateExercise(
-          id: 'es_b4_e5',
-          question: 'Translate to Spanish: "When?"',
-          answer: 'Cuándo',
-        ),
-        MultipleChoiceExercise(
-          id: 'es_b4_e6',
-          question: 'How do you ask "Can you help me?" in Spanish?',
-          options: ['¿Puedes ayudarme?', '¿Dónde está?', '¿Cómo?', '¿Por qué?'],
-          answer: '¿Puedes ayudarme?',
+          id: 'de_u3_l2_e3',
+          question: 'How do you say "Bed"?',
+          options: ['Bett', 'Bad', 'Tisch', 'Schrank'],
+          answer: 'Bett',
         ),
       ],
-    ),
+    );
+    // Lesson 3.3: Location (Prepositions)
+    data['de_u3_l3'] = Lesson(
+      id: 'de_u3_l3',
+      title: 'Where is it?',
+      description: 'Location prepositions',
+      exercises: [
+        MultipleChoiceExercise(
+          id: 'de_u3_l3_e1',
+          question: 'What means "In"?',
+          options: ['In', 'Auf', 'Unter', 'Neben'],
+          answer: 'In',
+        ),
+        TranslateExercise(
+          id: 'de_u3_l3_e2',
+          question: 'Translate: "On the table"',
+          answer: 'Auf dem Tisch',
+        ),
+        MultipleChoiceExercise(
+          id: 'de_u3_l3_e3',
+          question: 'How do you say "Under"?',
+          options: ['Unter', 'Über', 'Hinter', 'Vor'],
+          answer: 'Unter',
+        ),
+      ],
+    );
+  }
 
-    // Get lesson by language code and path (for language-specific lookup)
-  };
 
-  static Lesson? getLessonByLanguage(String langCode, String lessonPath) {
-    final key = '${langCode}_$lessonPath';
-    return lessons[key];
+  // ==================== FRENCH UNIT 1: LE CAFÉ ====================
+  static void _addFrenchUnit1(Map<String, Lesson> data) {
+    data['fr_u1_l1'] = Lesson(
+      id: 'fr_u1_l1',
+      title: 'Un Café, SVP',
+      description: 'Ordering politely',
+      exercises: [
+        MultipleChoiceExercise(
+          id: 'fr_u1_l1_e1',
+          question: 'How do you say "I would like"?',
+          options: ['Je voudrais', 'Je suis', 'J\'aime', 'Non'],
+          answer: 'Je voudrais',
+        ),
+        MultipleChoiceExercise(
+          id: 'fr_u1_l1_e2',
+          question: 'Translate: "A coffee, please"',
+          options: ['Un café, s\'il vous plaît', 'Un thé', 'Merci', 'Bonjour'],
+          answer: 'Un café, s\'il vous plaît',
+        ),
+        TranslateExercise(
+          id: 'fr_u1_l1_e3',
+          question: 'Translate to French: "with sugar"',
+          answer: 'avec du sucre',
+        ),
+      ],
+    );
+    // Add simple placeholders for l2/l3 if needed
+  }
+
+  // ==================== SPANISH UNIT 1: EL RESTAURANTE ====================
+  static void _addSpanishUnit1(Map<String, Lesson> data) {
+    data['es_u1_l1'] = Lesson(
+      id: 'es_u1_l1',
+      title: 'Ordering Tapas',
+      description: 'Small plates',
+      exercises: [
+        MultipleChoiceExercise(
+          id: 'es_u1_l1_e1',
+          question: 'How do you say "I want"?',
+          options: ['Yo quiero', 'Yo soy', 'Hola', 'Gracias'],
+          answer: 'Yo quiero',
+        ),
+        MultipleChoiceExercise(
+          id: 'es_u1_l1_e2',
+          question: 'Translate: "The menu, please"',
+          options: ['El menú, por favor', 'La cuenta', 'Gracias', 'Hola'],
+          answer: 'El menú, por favor',
+        ),
+      ],
+    );
+  }
+
+  static Lesson? getLessonByLanguage(String langCode, String lessonId) {
+    return lessons[lessonId];
   }
 
   static Lesson? getLesson(String title) {
-    return lessons[title];
+    if (title.isEmpty) return null;
+    try {
+      return lessons.values.firstWhere((l) => l.title == title);
+    } catch (e) {
+      return null;
+    }
   }
 }
