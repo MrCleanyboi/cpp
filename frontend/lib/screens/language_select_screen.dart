@@ -12,7 +12,7 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
   String fromLang = "English";
   String toLang = "Hindi";
 
-  final List<String> languages = ["English", "Hindi", "Spanish", "French", "German", "Japanese"];
+  final List<String> languages = ["English", "Spanish", "French", "German"];
 
   @override
   Widget build(BuildContext context) {

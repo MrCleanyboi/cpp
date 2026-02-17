@@ -37,7 +37,7 @@ class WelcomeScreen extends StatelessWidget {
               
               // Title
               Text(
-                'AI Language Tutor',
+                'Lexico',
                 style: GoogleFonts.outfit(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,

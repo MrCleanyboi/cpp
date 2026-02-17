@@ -31,7 +31,7 @@ class AiTutorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AI Language Tutor',
+      title: 'Lexico',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -43,6 +43,10 @@ class AiTutorApp extends StatelessWidget {
           secondary: Color(0xFF00E5FF), // Cyan accent
           surface: Color(0xFF1E212B), // Slightly lighter card bg
         ),
+// ... (omitting middle lines for brevity if not strictly needed, but replace_file_content usually needs block)
+// ... wait, I'll do two separate replacements or one large block if they are close.
+// Title is line 34. Icon is line 187. They are far apart. I should use multi_replace or two calls.
+// I will use replace_file_content for the TITLE first.
         textTheme: GoogleFonts.outfitTextTheme(
           Theme.of(context).textTheme.apply(
             bodyColor: Colors.white,

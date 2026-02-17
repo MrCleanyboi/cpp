@@ -32,6 +32,12 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
       'nativeName': 'Français',
       'code': 'fr',
     },
+    {
+      'name': 'Spanish',
+      'flag': '🇪🇸',
+      'nativeName': 'Español',
+      'code': 'es',
+    },
   ];
 
   Future<void> _continueToHome() async {

@@ -21,6 +21,13 @@ class _ChatScreenState extends State<ChatScreen> {
   bool isLoading = false;
   bool _isListening = false;
 
+  // New State for Translation Demo
+  String selectedLanguage = "German";
+  String selectedLevel = "A1";
+  
+  final List<String> languages = ["German", "French", "Spanish"];
+  final List<String> levels = ["A1", "A2", "B1", "B2"];
+
   @override
   void initState() {
     super.initState();
@@ -29,7 +36,7 @@ class _ChatScreenState extends State<ChatScreen> {
     // Use topic if provided, otherwise generic greeting
     String greeting = widget.topic != null 
         ? "Welcome to the ${widget.topic} lesson! Shall we start practice?"
-        : "Hello! I'm your AI English Tutor. I can help you practice conversation and fix your mistakes. What shall we talk about today?";
+        : "Hello! I'm your AI Tutor. I can translate English words for you. Choose a language and level explicitly!";
 
     messages.add({
       "role": "ai", 
@@ -42,7 +49,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     String userMsg = controller.text;
     
-    // Analyze for errors locally before sending
+    // Analyze for errors locally before sending (keep existing logic)
     List<CorrectionSpan> errors = CorrectionHelper.analyze(userMsg);
 
     setState(() {
@@ -56,8 +63,51 @@ class _ChatScreenState extends State<ChatScreen> {
     controller.clear();
     _scrollToBottom();
 
-    // API call
-    String reply = await ApiService.sendMessage(userMsg); 
+    // --- MOCK TRANSLATION LOGIC FOR DEMO ---
+    String reply = "";
+    
+    // Simple normalization
+    String input = userMsg.trim().toLowerCase();
+    
+    if (selectedLanguage == "German") {
+       if (input.contains("hello") || input.contains("hi")) {
+           if (selectedLevel == "A1") reply = "Hallo (A1)";
+           else if (selectedLevel == "A2") reply = "Guten Tag (A2)";
+           else if (selectedLevel == "B1") reply = "Grüß Gott (B1)";
+           else if (selectedLevel == "B2") reply = "Herzlich willkommen (B2)";
+       }
+       else if (input.contains("thank")) { // thank you
+           if (selectedLevel == "A1") reply = "Danke (A1)";
+           else if (selectedLevel == "A2") reply = "Vielen Dank (A2)";
+           else if (selectedLevel == "B1") reply = "Besten Dank (B1)";
+           else if (selectedLevel == "B2") reply = "Ich danke Ihnen vielmals (B2)";
+       }
+       else if (input.contains("bye")) { // goodbye
+           if (selectedLevel == "A1") reply = "Tschüss (A1)";
+           else if (selectedLevel == "A2") reply = "Auf Wiedersehen (A2)";
+           else if (selectedLevel == "B1") reply = "Bis bald (B1)";
+           else if (selectedLevel == "B2") reply = "Leben Sie wohl (B2)";
+       }
+       else if (input.contains("how are you")) {
+           if (selectedLevel == "A1") reply = "Wie geht's? (A1)";
+           else if (selectedLevel == "A2") reply = "Wie geht es Ihnen? (A2)";
+           else reply = "Wie befinden Sie sich heute? ($selectedLevel)";
+       }
+    }
+    
+    // Fallback if not hit or other language (just for demo safety)
+    if (reply.isEmpty) {
+        // Fallback to API if we had it, but for now just a generic or echo
+        // Or actually call the API if we want real chat
+        // For the demo request: "simply implement this for german for now for a specific or 2-3 words"
+        // I'll just say use the API for others, but for safety in this demo I'll just explain.
+        reply = await ApiService.sendMessage("Translate '$userMsg' to $selectedLanguage at $selectedLevel level."); 
+    }
+
+    // delayed response simulation for local mock
+    if (!reply.startsWith("Error")) { 
+        await Future.delayed(const Duration(milliseconds: 600)); 
+    }
     
     if (mounted) {
       setState(() {
@@ -88,7 +138,7 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 Text("AI Tutor", style: TextStyle(fontSize: 18)),
                 Text(
-                  "Online", 
+                  "Translator Mode", 
                   style: TextStyle(fontSize: 12, color: Colors.greenAccent),
                 ),
               ],
@@ -98,8 +148,56 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-          // Avatar Header (Only visible if scrolled to top usually, but let's put it in list or fixed?)
-          // Let's put a small branding header
+          // --- SETTINGS HEADER ---
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: const Color(0xFF1E212B),
+            child: Row(
+              children: [
+                // Language Dropdown
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: selectedLanguage,
+                        dropdownColor: const Color(0xFF1E212B),
+                        isExpanded: true,
+                        style: const TextStyle(color: Colors.white),
+                        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                        items: languages.map((l) => DropdownMenuItem(value: l, child: Text(l))).toList(),
+                        onChanged: (val) => setState(() => selectedLanguage = val!),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Level Dropdown
+                Container(
+                  width: 100,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedLevel,
+                      dropdownColor: const Color(0xFF1E212B),
+                      style: const TextStyle(color: Colors.white),
+                      icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                      items: levels.map((l) => DropdownMenuItem(value: l, child: Text(l))).toList(),
+                      onChanged: (val) => setState(() => selectedLevel = val!),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           
           Expanded(
             child: ListView.builder(
@@ -199,7 +297,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: TextField(
                     controller: controller,
                     decoration: InputDecoration(
-                      hintText: _isListening ? "🎤 Listening..." : "Type or speak...",
+                      hintText: _isListening ? "🎤 Listening..." : "Type phrase to translate...",
                       hintStyle: TextStyle(
                         color: _isListening ? Colors.greenAccent : Colors.white.withOpacity(0.3)
                       ),
@@ -248,7 +346,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   child: IconButton(
                     onPressed: send,
-                    icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                    icon: const Icon(Icons.translate_rounded, color: Colors.white, size: 20),
                   ),
                 ),
               ],
@@ -286,29 +384,15 @@ class _ChatScreenState extends State<ChatScreen> {
       // result = { "text": "...", "reply": "...", "pause_analysis": ... }
       if (result != null) {
         String userText = result["text"] ?? "";
-        String aiReply = result["reply"] ?? "";
+        // We ignore the backend AI reply here because we want to run our translation logic
+        // String aiReply = result["reply"] ?? ""; 
         
         if (userText.isNotEmpty) {
             setState(() {
-                controller.text = userText; // Show user what they said
-                
-                // Add USER message to chat
-                messages.add({
-                    "role": "user", 
-                    "text": userText,
-                    "errors": [] // Add correction logic later if needed
-                });
-
-                // Add AI reply to chat IMMEDIATELY (since backend already generated it)
-                if (aiReply.isNotEmpty) {
-                    messages.add({
-                        "role": "ai", 
-                        "text": aiReply
-                    });
-                    _voiceService.speak(aiReply);
-                }
+                controller.text = userText; 
+                // Don't auto-send, let user confirm or just call send()
+                send(); // Auto-send for convenience
             });
-            _scrollToBottom();
         }
       }
     } else {
@@ -342,11 +426,11 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               border: Border.all(color: const Color(0xFF6C63FF).withOpacity(0.5), width: 3),
             ),
-            child: const Icon(Icons.person_outline, size: 60, color: Colors.white24), // Fallback if image missing
+            child: const Icon(Icons.smart_toy_outlined, size: 60, color: Colors.white24), // Changed to robot icon
           ),
           const SizedBox(height: 16),
           const Text(
-            "English Tutor",
+            "AI Tutor",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -354,7 +438,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           const Text(
-            "Expert Verification Active",
+            "Translation Mode Active",
             style: TextStyle(fontSize: 14, color: Colors.greenAccent),
           ),
           const SizedBox(height: 20),

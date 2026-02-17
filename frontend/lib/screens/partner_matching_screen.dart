@@ -21,13 +21,7 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
     'Spanish',
     'French',
     'German',
-    'Italian',
-    'Japanese',
-    'Korean',
-    'Chinese',
-    'Portuguese',
-    'Arabic',
-    'Russian'
+    'English',
   ];
 
   final List<String> levels = ['Beginner', 'Intermediate', 'Advanced'];
