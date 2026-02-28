@@ -14,7 +14,6 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_tts: ^3.8.3
   permission_handler: ^11.0.1
-  record: 4.4.4
   path_provider: ^2.1.0
   shared_preferences: ^2.5.4
   web_socket_channel: ^2.4.0

@@ -15,27 +15,39 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
   String selectedLanguage = 'Spanish';
   String selectedLevel = 'Intermediate';
   String practiceMode = 'Conversation';
-  Set<String> selectedTopics = {'Travel', 'Food'};
 
+  Map<String, dynamic>? userStats;
+  bool isLoadingStats = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStats();
+  }
+
+  Future<void> _fetchStats() async {
+    try {
+      final stats = await matchingApiService.getUserStats();
+      if (mounted) {
+        setState(() {
+          userStats = stats;
+          isLoadingStats = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => isLoadingStats = false);
+      }
+    }
+  }
   final List<String> languages = [
     'Spanish',
     'French',
     'German',
-    'English',
   ];
 
   final List<String> levels = ['Beginner', 'Intermediate', 'Advanced'];
   final List<String> modes = ['Conversation', 'Tutoring', 'Casual Chat'];
-  final List<String> topics = [
-    'Travel',
-    'Food',
-    'Culture',
-    'Work',
-    'Hobbies',
-    'Music',
-    'Movies',
-    'Sports'
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -221,53 +233,6 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
                 }).toList(),
               ),
 
-              const SizedBox(height: 24),
-
-              // Topics (Optional)
-              _buildSectionTitle('Topics (Optional)'),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: topics.map((topic) {
-                  final isSelected = selectedTopics.contains(topic);
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if (isSelected) {
-                          selectedTopics.remove(topic);
-                        } else {
-                          selectedTopics.add(topic);
-                        }
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF00E5FF).withOpacity(0.1)
-                            : const Color(0xFF1E212B),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? const Color(0xFF00E5FF)
-                              : Colors.white12,
-                        ),
-                      ),
-                      child: Text(
-                        topic,
-                        style: GoogleFonts.outfit(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: isSelected ? const Color(0xFF00E5FF) : Colors.white54,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-
-              const SizedBox(height: 32),
 
               // Find Partner Button
               SizedBox(
@@ -321,11 +286,17 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildStatRow(Icons.people_outline, '47 users online', Colors.greenAccent),
-                    const SizedBox(height: 12),
-                    _buildStatRow(Icons.timer_outlined, 'Avg wait: ~30 sec', const Color(0xFF00E5FF)),
-                    const SizedBox(height: 12),
-                    _buildStatRow(Icons.language, '12 languages available', const Color(0xFF6C63FF)),
+                    if (isLoadingStats)
+                      const Center(child: CircularProgressIndicator())
+                    else if (userStats == null)
+                      _buildStatRow(Icons.error_outline, 'Could not load stats', Colors.redAccent)
+                    else ...[
+                      _buildStatRow(Icons.check_circle_outline, '${userStats!['total_matches']} total matches', Colors.greenAccent),
+                      const SizedBox(height: 12),
+                      _buildStatRow(Icons.timer_outlined, '${userStats!['total_duration_hours']} hours practiced', const Color(0xFF00E5FF)),
+                      const SizedBox(height: 12),
+                      _buildStatRow(Icons.message_outlined, '${userStats!['total_messages']} messages sent', const Color(0xFF6C63FF)),
+                    ],
                   ],
                 ),
               ),
@@ -381,7 +352,6 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
         targetLanguage: selectedLanguage,
         proficiencyLevel: selectedLevel,
         practiceMode: practiceMode.toLowerCase().replaceAll(' ', '_'),
-        topics: selectedTopics.map((t) => t.toLowerCase()).toList(),
       );
       
       // Close loading

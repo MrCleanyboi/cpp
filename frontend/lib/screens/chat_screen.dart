@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../utils/correction_helper.dart';
-
 import '../services/voice_service.dart';
+
+
 
 class ChatScreen extends StatefulWidget {
   final String? topic;
@@ -16,10 +17,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController controller = TextEditingController();
   final List<Map<String, dynamic>> messages = [];
   final ScrollController _scrollController = ScrollController();
-  
   final VoiceService _voiceService = VoiceService();
+  
   bool isLoading = false;
-  bool _isListening = false;
 
   // New State for Translation Demo
   String selectedLanguage = "German";
@@ -31,7 +31,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _voiceService.init(); // Init Voice Service
+    _voiceService.init();
     
     // Use topic if provided, otherwise generic greeting
     String greeting = widget.topic != null 
@@ -70,29 +70,88 @@ class _ChatScreenState extends State<ChatScreen> {
     String input = userMsg.trim().toLowerCase();
     
     if (selectedLanguage == "German") {
-       if (input.contains("hello") || input.contains("hi")) {
-           if (selectedLevel == "A1") reply = "Hallo (A1)";
-           else if (selectedLevel == "A2") reply = "Guten Tag (A2)";
-           else if (selectedLevel == "B1") reply = "Grüß Gott (B1)";
-           else if (selectedLevel == "B2") reply = "Herzlich willkommen (B2)";
-       }
-       else if (input.contains("thank")) { // thank you
-           if (selectedLevel == "A1") reply = "Danke (A1)";
-           else if (selectedLevel == "A2") reply = "Vielen Dank (A2)";
-           else if (selectedLevel == "B1") reply = "Besten Dank (B1)";
-           else if (selectedLevel == "B2") reply = "Ich danke Ihnen vielmals (B2)";
-       }
-       else if (input.contains("bye")) { // goodbye
-           if (selectedLevel == "A1") reply = "Tschüss (A1)";
-           else if (selectedLevel == "A2") reply = "Auf Wiedersehen (A2)";
-           else if (selectedLevel == "B1") reply = "Bis bald (B1)";
-           else if (selectedLevel == "B2") reply = "Leben Sie wohl (B2)";
-       }
-       else if (input.contains("how are you")) {
-           if (selectedLevel == "A1") reply = "Wie geht's? (A1)";
-           else if (selectedLevel == "A2") reply = "Wie geht es Ihnen? (A2)";
-           else reply = "Wie befinden Sie sich heute? ($selectedLevel)";
-       }
+      final Map<String, List<String>> germanDictionary = {
+        // Greetings & Basics
+        "how are you": ["Wie geht's?", "Wie geht es dir?", "Wie geht es Ihnen?", "Wie befinden Sie sich heute?"],
+        "good morning": ["Guten Morgen", "Guten Morgen", "Einen schönen guten Morgen", "Einen wunderschönen guten Morgen"],
+        "good night": ["Gute Nacht", "Gute Nacht", "Schlafen Sie gut", "Eine geruhsame Nacht"],
+        "thank you": ["Danke", "Vielen Dank", "Herzlichen Dank", "Ich danke Ihnen vielmals"],
+        "thanks": ["Danke", "Vielen Dank", "Herzlichen Dank", "Besten Dank"],
+        "hello": ["Hallo", "Guten Tag", "Grüß Gott", "Herzlich willkommen"],
+        "hi": ["Hallo", "Guten Tag", "Servus", "Seien Sie gegrüßt"],
+        "goodbye": ["Tschüss", "Auf Wiedersehen", "Auf Wiedersehen", "Leben Sie wohl"],
+        "bye": ["Tschüss", "Auf Wiedersehen", "Bis bald", "Auf Wiederhören"],
+        "yes": ["Ja", "Ja", "Ja, gerne", "Selbstverständlich"],
+        "no": ["Nein", "Nein", "Leider nein", "Auf gar keinen Fall"],
+        "please": ["Bitte", "Bitte", "Bitte sehr", "Ich bitte darum"],
+        "sorry": ["Sorry", "Tut mir leid", "Entschuldigung", "Ich bitte um Verzeihung"],
+        "friend": ["Freund", "Freund", "Freund", "Bekannter"],
+        "love": ["Liebe", "Liebe", "Zuneigung", "Leidenschaft"],
+        "beautiful": ["Schön", "Schön", "Wunderschön", "Atemberaubend"],
+        "good": ["Gut", "Gut", "Gut", "Hervorragend"],
+        "bad": ["Schlecht", "Schlecht", "Schlecht", "Mangelhaft"],
+
+        // Time & Work
+        "time": ["Zeit", "Zeit", "Zeit", "Uhrzeit"],
+        "today": ["Heute", "Heute", "Heute", "Heutzutage"],
+        "tomorrow": ["Morgen", "Morgen", "Morgen", "Am morgigen Tag"],
+        "yesterday": ["Gestern", "Gestern", "Gestern", "Am gestrigen Tag"],
+        "work": ["Arbeit", "Arbeit", "Arbeit", "Beruf"],
+        "learn": ["Lernen", "Lernen", "Lernen", "Studieren"],
+        "money": ["Geld", "Geld", "Geld", "Bargeld"],
+
+        // Food & Drink
+        "water": ["Wasser", "Wasser", "Wasser", "Wasser"],
+        "food": ["Essen", "Essen", "Essen", "Nahrung"],
+        "apple": ["Apfel", "Apfel", "Apfel", "Apfel"],
+        "bread": ["Brot", "Brot", "Brot", "Brot"],
+        "coffee": ["Kaffee", "Kaffee", "Kaffee", "Kaffee"],
+        
+        // Colors
+        "red": ["Rot", "Rot", "Rot", "Rot"],
+        "blue": ["Blau", "Blau", "Blau", "Blau"],
+        "green": ["Grün", "Grün", "Grün", "Grün"],
+        "yellow": ["Gelb", "Gelb", "Gelb", "Gelb"],
+        "black": ["Schwarz", "Schwarz", "Schwarz", "Schwarz"],
+        "white": ["Weiß", "Weiß", "Weiß", "Weiß"],
+
+        // Family
+        "mother": ["Mutter", "Mutter", "Mutter", "Mutter"],
+        "father": ["Vater", "Vater", "Vater", "Vater"],
+        "sister": ["Schwester", "Schwester", "Schwester", "Schwester"],
+        "brother": ["Bruder", "Bruder", "Bruder", "Bruder"],
+        "child": ["Kind", "Kind", "Kind", "Kind"],
+
+        // Animals
+        "dog": ["Hund", "Hund", "Hund", "Hund"],
+        "cat": ["Katze", "Katze", "Katze", "Katze"],
+        "bird": ["Vogel", "Vogel", "Vogel", "Vogel"],
+
+        // Numbers
+        "one": ["Eins", "Eins", "Eins", "Eins"],
+        "two": ["Zwei", "Zwei", "Zwei", "Zwei"],
+        "three": ["Drei", "Drei", "Drei", "Drei"],
+      };
+
+
+      int levelIndex = 0;
+      if (selectedLevel == "A2") levelIndex = 1;
+      else if (selectedLevel == "B1") levelIndex = 2;
+      else if (selectedLevel == "B2") levelIndex = 3;
+
+      // Find the longest matching key in the dictionary
+      String matchedKey = "";
+      for (var key in germanDictionary.keys) {
+        if (input.contains(key)) {
+          if (key.length > matchedKey.length) {
+            matchedKey = key;
+          }
+        }
+      }
+      
+      if (matchedKey.isNotEmpty) {
+          reply = "${germanDictionary[matchedKey]![levelIndex]} ($selectedLevel)";
+      }
     }
     
     // Fallback if not hit or other language (just for demo safety)
@@ -297,43 +356,21 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: TextField(
                     controller: controller,
                     decoration: InputDecoration(
-                      hintText: _isListening ? "🎤 Listening..." : "Type phrase to translate...",
+                      hintText: "Type phrase to translate...",
                       hintStyle: TextStyle(
-                        color: _isListening ? Colors.greenAccent : Colors.white.withOpacity(0.3)
+                        color: Colors.white.withOpacity(0.3)
                       ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       filled: true,
-                      fillColor: _isListening ? const Color(0xFF1E2F2B) : const Color(0xFF0F1117),
+                      fillColor: const Color(0xFF0F1117),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
-                        borderSide: _isListening 
-                          ? const BorderSide(color: Colors.greenAccent, width: 2) 
-                          : BorderSide.none,
+                        borderSide: BorderSide.none,
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                
-                // Mic Button
-                GestureDetector(
-                  onTap: _toggleListening,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: _isListening 
-                        ? const LinearGradient(colors: [Colors.red, Colors.redAccent])
-                        : const LinearGradient(colors: [Color(0xFF6C63FF), Color(0xFF5A52D5)]),
-                    ),
-                    child: Icon(
-                      _isListening ? Icons.mic : Icons.mic_none, 
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                ),
                 const SizedBox(width: 8),
 
                 // Send Button
@@ -372,40 +409,6 @@ class _ChatScreenState extends State<ChatScreen> {
         curve: Curves.easeOut,
       );
     });
-  }
-
-  void _toggleListening() async {
-    if (_isListening) {
-      // Stop listening and get result (Map)
-      final result = await _voiceService.stopListening((state) {
-        setState(() => _isListening = state);
-      });
-      
-      // result = { "text": "...", "reply": "...", "pause_analysis": ... }
-      if (result != null) {
-        String userText = result["text"] ?? "";
-        // We ignore the backend AI reply here because we want to run our translation logic
-        // String aiReply = result["reply"] ?? ""; 
-        
-        if (userText.isNotEmpty) {
-            setState(() {
-                controller.text = userText; 
-                // Don't auto-send, let user confirm or just call send()
-                send(); // Auto-send for convenience
-            });
-        }
-      }
-    } else {
-      // Start listening
-      await _voiceService.startListening(
-        onResult: (text) {
-          // Not used
-        }, 
-        onListeningStateChanged: (state) {
-          setState(() => _isListening = state);
-        }
-      );
-    }
   }
 
   Widget _buildAvatarHeader() {

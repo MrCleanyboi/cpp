@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
+import 'services/friends_service.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -143,6 +144,9 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
 
       if (isAuth) {
         print('DEBUG: Navigating to HomeScreen');
+        
+        // Initialize Friends real-time service
+        FriendsService().connect();
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomeScreen()),

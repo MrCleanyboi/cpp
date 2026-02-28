@@ -15,12 +15,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
 
   final List<Map<String, String>> _languages = [
     {
-      'name': 'English',
-      'flag': '🇬🇧',
-      'nativeName': 'English',
-      'code': 'en',
-    },
-    {
       'name': 'German',
       'flag': '🇩🇪',
       'nativeName': 'Deutsch',

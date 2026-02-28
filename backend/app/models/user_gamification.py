@@ -59,6 +59,11 @@ class UserGamification(BaseModel):
     total_lessons_completed: int = 0
     total_time_minutes: int = 0
     
+    # Shop & Cosmetics
+    inventory: List[str] = []  # List of purchased item IDs
+    equipped_banner: Optional[str] = None
+    equipped_effect: Optional[str] = None
+    
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 

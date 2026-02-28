@@ -22,6 +22,13 @@ class PyObjectId(ObjectId):
             return ObjectId(v)
         raise ValueError("Invalid ObjectId")
 
+class FriendRequest(BaseModel):
+    from_user_id: str
+    from_username: str
+    from_display_name: str
+    status: str = "pending" # pending, accepted, declined
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 class UserBase(BaseModel):
     username: str
     email: str  # Required for authentication
@@ -37,7 +44,7 @@ class UserBase(BaseModel):
     
     # Friends
     friends: List[str] = []  # List of user IDs
-    friend_requests: List[str] = []  # Pending friend request user IDs
+    friend_requests: List[FriendRequest] = []  # Pending requests
 
 class UserCreate(UserBase):
     password_hash: str  # Hashed password for storage

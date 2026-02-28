@@ -4,6 +4,7 @@ import 'widgets/section_header.dart';
 import '../../models/lesson_model.dart';
 import '../../utils/language_theme.dart'; // Import LanguageTheme
 import '../lesson_screen.dart';
+import '../vocab_preview_screen.dart';
 import '../../services/auth_service.dart';
 
 class LearningPathScreen extends StatefulWidget {
@@ -147,7 +148,8 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
         'type': 'header', 
         'title': '$levelName - $unitTitle', 
         'desc': unitDesc, 
-        'color': sectionColor
+        'color': sectionColor,
+        'unitId': '${widget.targetLanguage}_u$unitNum',
       });
 
       // Track lesson count within this unit for snake pattern
@@ -219,6 +221,24 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
                 title: item['title'],
                 description: item['desc'],
                 color: item['color'],
+                onTap: () {
+                  final intro = IntroLessonData.getIntroLesson(item['unitId']);
+                  if (intro != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VocabPreviewScreen(
+                          introLesson: intro,
+                          themeColor: item['color'],
+                        ),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Preview coming soon!")),
+                    );
+                  }
+                },
               );
             } else {
               return _buildPathNodeRow(context, item, index, pathItems);

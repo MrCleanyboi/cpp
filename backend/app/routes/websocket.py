@@ -11,6 +11,7 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket, user_id: str):
         await websocket.accept()
         self.active_connections[user_id] = websocket
+        print(f"DEBUG: WebSocket connected for user {user_id}. Total connections: {len(self.active_connections)}")
         print(f"User {user_id} connected via WebSocket")
 
     def disconnect(self, user_id: str):
@@ -18,13 +19,17 @@ class ConnectionManager:
             del self.active_connections[user_id]
             print(f"User {user_id} disconnected")
 
-    async def send_personal_message(self, message: str, user_id: str):
+    async def send_personal_message(self, message: dict, user_id: str):
+        print(f"DEBUG: Attempting to send message to user {user_id}. Active: {list(self.active_connections.keys())}")
         if user_id in self.active_connections:
-            await self.active_connections[user_id].send_text(message)
+            print(f"DEBUG: Sending message to {user_id}: {message}")
+            await self.active_connections[user_id].send_json(message)
+        else:
+            print(f"DEBUG: User {user_id} not connected, message not sent")
 
-    async def broadcast(self, message: str):
+    async def broadcast(self, message: dict):
         for connection in self.active_connections.values():
-            await connection.send_text(message)
+            await connection.send_json(message)
 
 manager = ConnectionManager()
 
@@ -35,6 +40,6 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
         while True:
             data = await websocket.receive_text()
             # simple echo for now, or routing logic later
-            await manager.send_personal_message(f"You wrote: {data}", user_id)
+            await manager.send_personal_message({"type": "echo", "text": f"You wrote: {data}"}, user_id)
     except WebSocketDisconnect:
         manager.disconnect(user_id)

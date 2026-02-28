@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
+import '../services/gamification_service.dart';
 import 'welcome_screen.dart';
+import '../services/friends_service.dart';
+import 'partner_chat_screen.dart';
+import 'shop_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -14,9 +18,13 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final AuthService _authService = AuthService();
+  final GamificationService _gamificationService = GamificationService();
   Map<String, dynamic>? _profileData;
   bool _isLoading = true;
   String _username = 'User';
+  List<dynamic> _friends = [];
+  List<dynamic> _pendingRequests = [];
+  final FriendsService _friendsService = FriendsService();
 
   @override
   void initState() {
@@ -29,6 +37,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await _loadUsername();
     // Then load profile with correct username
     await _loadProfile();
+    // Load friends data
+    await _loadFriendsData();
+  }
+
+  Future<void> _loadFriendsData() async {
+    final friends = await _friendsService.getFriends();
+    final requests = await _friendsService.getPendingRequests();
+    if (mounted) {
+      setState(() {
+        _friends = friends;
+        _pendingRequests = requests;
+      });
+    }
+  }
+
+  Future<void> _acceptRequest(String userId) async {
+    final res = await _friendsService.acceptFriendRequest(userId);
+    if (res['status'] == 'accepted') {
+      await _loadFriendsData();
+    }
+  }
+
+  Future<void> _callFriend(Map<String, dynamic> friend) async {
+     final res = await _friendsService.callFriend(friend['id']);
+     if (res['status'] == 'calling') {
+       if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('Calling...'), backgroundColor: Colors.purple),
+         );
+         
+         // Navigate to chat screen immediately as the caller
+         Navigator.push(
+           context,
+           MaterialPageRoute(
+             builder: (_) => PartnerChatScreen(
+               matchId: res['match_id'],
+               partner: {
+                 'user_id': friend['id'],
+                 'display_name': friend['display_name'],
+               },
+               targetLanguage: 'en', // Default or get from current user
+             ),
+           ),
+         );
+       }
+     } else {
+       if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('Call failed: ${res['message'] ?? 'Unknown error'}'), backgroundColor: Colors.red),
+         );
+       }
+     }
   }
 
   Future<void> _loadUsername() async {
@@ -72,29 +132,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
-    // TODO: Load profile from gamification service
-    // For now, using mock data
-    setState(() {
-      _profileData = {
-        'username': _username,
-        'display_name': _username,
-        'xp': 450,
-        'level': 5,
-        'xp_to_next_level': 150,
-        'streak_count': 7,
-        'longest_streak': 15,
-        'gems': 125,
-        'hearts': 4,
-        'max_hearts': 5,
-        'daily_goal_xp': 20,
-        'daily_xp_earned': 25,
-        'daily_goal_met': true,
-        'achievements_count': 8,
-        'total_lessons_completed': 45,
-        'total_time_minutes': 420,
-      };
-      _isLoading = false;
-    });
+    try {
+      final profile = await _gamificationService.getUserProfile(widget.userId);
+      if (mounted) {
+        setState(() {
+          _profileData = {
+            'username': profile['username'] ?? _username,
+            'display_name': profile['display_name'] ?? _username,
+            'xp': (profile['xp'] as num?)?.toInt() ?? 0,
+            'level': (profile['level'] as num?)?.toInt() ?? 1,
+            'xp_to_next_level': (profile['xp_to_next_level'] as num?)?.toInt() ?? 50,
+            'streak_count': (profile['streak_count'] as num?)?.toInt() ?? 0,
+            'longest_streak': (profile['longest_streak'] as num?)?.toInt() ?? 0,
+            'gems': (profile['gems'] as num?)?.toInt() ?? 0,
+            'hearts': (profile['hearts'] as num?)?.toInt() ?? 5,
+            'max_hearts': (profile['max_hearts'] as num?)?.toInt() ?? 5,
+            'daily_goal_xp': (profile['daily_goal_xp'] as num?)?.toInt() ?? 20,
+            'daily_xp_earned': (profile['daily_xp_earned'] as num?)?.toInt() ?? 0,
+            'daily_goal_met': profile['daily_goal_met'] ?? false,
+            'achievements_count': (profile['achievements_count'] as num?)?.toInt() ?? 0,
+            'total_lessons_completed': (profile['total_lessons_completed'] as num?)?.toInt() ?? 0,
+            'total_time_minutes': (profile['total_time_minutes'] as num?)?.toInt() ?? 0,
+            'inventory': profile['inventory'] ?? [],
+            'equipped_banner': profile['equipped_banner'],
+            'equipped_effect': profile['equipped_effect'],
+          };
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading profile: $e');
+      if (mounted) {
+        setState(() {
+          _profileData = {
+            'username': _username, 'display_name': _username,
+            'xp': 0, 'level': 1, 'xp_to_next_level': 50,
+            'streak_count': 0, 'longest_streak': 0,
+            'gems': 0, 'hearts': 5, 'max_hearts': 5,
+            'daily_goal_xp': 20, 'daily_xp_earned': 0,
+            'daily_goal_met': false, 'achievements_count': 0,
+            'total_lessons_completed': 0, 'total_time_minutes': 0,
+          };
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -117,6 +199,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             tooltip: 'Logout',
             onPressed: _logout,
           ),
+          IconButton(
+            icon: const Icon(Icons.storefront_rounded),
+            tooltip: 'Shop',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ShopScreen(userId: widget.userId)),
+            ).then((_) => _loadProfile()),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -130,10 +220,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withOpacity(0.7),
-                  ],
+                  colors: profile['equipped_banner'] == 'banner_neon' 
+                      ? [const Color(0xFF6C63FF), const Color(0xFFFF00CC)]
+                      : profile['equipped_banner'] == 'banner_nature'
+                          ? [const Color(0xFF2D5A27), const Color(0xFF4CB050)]
+                          : [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.7)],
                 ),
               ),
               child: Column(
@@ -148,8 +239,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       border: Border.all(color: Colors.white, width: 4),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 10,
+                          color: profile['equipped_effect'] == 'effect_golden'
+                              ? Colors.amber.withOpacity(0.5)
+                              : profile['equipped_effect'] == 'effect_fire'
+                                  ? Colors.orange.withOpacity(0.5)
+                                  : Colors.black.withOpacity(0.2),
+                          blurRadius: 15,
+                          spreadRadius: 2,
                           offset: const Offset(0, 5),
                         ),
                       ],
@@ -341,9 +437,140 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
+            const SizedBox(height: 24),
+
+            // Pending Requests Section
+            if (_pendingRequests.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pending Requests',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amberAccent,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ..._pendingRequests.map((req) => _buildRequestTile(req)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+
+            // Friends List Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'My Friends',
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (_friends.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E212B),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'No friends yet. Add partners you like!',
+                          style: GoogleFonts.outfit(color: Colors.white30),
+                        ),
+                      ),
+                    )
+                  else
+                    ..._friends.map((friend) => _buildFriendTile(friend)),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 32),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildRequestTile(Map<String, dynamic> req) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E212B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.amberAccent.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: const Color(0xFF6C63FF),
+            child: Text(req['from_display_name'][0]),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              req['from_display_name'],
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.check_circle_rounded, color: Colors.greenAccent),
+            onPressed: () => _acceptRequest(req['from_user_id']),
+          ),
+          IconButton(
+            icon: const Icon(Icons.cancel_rounded, color: Colors.redAccent),
+            onPressed: () {}, // TODO: Decline
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFriendTile(Map<String, dynamic> friend) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E212B),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: const Color(0xFF6C63FF).withOpacity(0.2),
+            child: Text(friend['display_name'][0], style: const TextStyle(color: Color(0xFF6C63FF))),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              friend['display_name'],
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => _callFriend(friend),
+            icon: const Icon(Icons.call_rounded, size: 16),
+            label: const Text('Call'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              backgroundColor: const Color(0xFF6C63FF).withOpacity(0.1),
+              foregroundColor: const Color(0xFF6C63FF),
+              elevation: 0,
+            ),
+          ),
+        ],
       ),
     );
   }

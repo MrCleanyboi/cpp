@@ -13,6 +13,7 @@ from app.utils.security import (
     get_user_id_from_token
 )
 from app.services.auth_service import get_current_user
+from app.services.gamification_service import GamificationService
 
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
@@ -52,6 +53,9 @@ async def signup(user_data: UserSignup):
     
     result = await db.users.insert_one(user_dict)
     user_id = str(result.inserted_id)
+
+    # Initialize gamification profile with 100 starter gems
+    await GamificationService.get_or_create_user_gamification(user_id)
     
     # Create access token
     access_token = create_access_token(data={"sub": user_id, "username": user_data.username})

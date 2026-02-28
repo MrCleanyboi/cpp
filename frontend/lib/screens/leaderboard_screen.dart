@@ -211,6 +211,30 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
               ),
             ),
           ),
+
+          // Gem reward badge for top 3
+          if (isTop3) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00E5FF).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF00E5FF).withOpacity(0.4),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                '+${_getGemReward(entry['rank'])} 💎',
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF00E5FF),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -226,6 +250,19 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
         return '🥉';
       default:
         return '#$rank';
+    }
+  }
+
+  int _getGemReward(int rank) {
+    switch (rank) {
+      case 1:
+        return 50;
+      case 2:
+        return 30;
+      case 3:
+        return 10;
+      default:
+        return 0;
     }
   }
 }

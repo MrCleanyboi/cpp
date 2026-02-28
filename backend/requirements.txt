@@ -18,4 +18,5 @@ torch
 click
 h11
 websockets
+pymongo
 

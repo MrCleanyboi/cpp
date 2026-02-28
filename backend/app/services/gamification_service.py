@@ -51,7 +51,7 @@ class GamificationService:
             xp=0,
             level=1,
             hearts=5,
-            gems=0
+            gems=100  # Starter gems awarded to every new user
         )
         
         # Insert into DB
@@ -477,8 +477,31 @@ class GamificationService:
             "achievements": gam.achievements,
             "achievements_count": len(gam.achievements),
             "total_lessons_completed": gam.total_lessons_completed,
-            "total_time_minutes": gam.total_time_minutes
+            "total_time_minutes": gam.total_time_minutes,
+            "inventory": gam.inventory,
+            "equipped_banner": gam.equipped_banner,
+            "equipped_effect": gam.equipped_effect
         }
+
+    @staticmethod
+    async def ensure_starter_gems(user_id: str) -> Dict:
+        """
+        Ensure an existing user has received their 100 starter gems.
+        Awards 100 gems if the user currently has 0 gems and no prior gem history.
+        Safe to call multiple times — only acts when gems == 0.
+        """
+        gam = await GamificationService.get_or_create_user_gamification(user_id)
+
+        if gam.gems == 0:
+            gam.gems = 100
+            gam.updated_at = datetime.utcnow()
+            if gam.id:
+                await db.user_gamifications.update_one(
+                    {"_id": ObjectId(gam.id)},
+                    {"$set": {"gems": 100, "updated_at": gam.updated_at}}
+                )
+            return {"awarded": True, "gems": 100}
+        return {"awarded": False, "gems": gam.gems}
 
 
 # Singleton instance

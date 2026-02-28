@@ -7,19 +7,18 @@ import '../services/chat_websocket_service.dart';
 import '../services/matching_api_service.dart';
 import '../services/webrtc_service.dart';
 import 'package:intl/intl.dart';
+import '../services/friends_service.dart';
 
 class PartnerChatScreen extends StatefulWidget {
   final String matchId;
   final Map<String, dynamic> partner;
   final String targetLanguage;
-  final String websocketUrl;
 
   const PartnerChatScreen({
     super.key,
     required this.matchId,
     required this.partner,
     required this.targetLanguage,
-    required this.websocketUrl,
   });
 
   @override
@@ -40,6 +39,8 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
   bool _isMicEnabled = true;
   bool _partnerTyping = false;
   bool _isConnected = false;
+  bool _isRequestSent = false;
+  final FriendsService _friendsService = FriendsService();
   int _sessionDuration = 0;
   Timer? _durationTimer;
   Timer? _typingTimer;
@@ -307,6 +308,18 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
     );
   }
 
+  void _addFriend() async {
+    final res = await _friendsService.sendFriendRequest(widget.partner['user_id']);
+    if (res['status'] == 'request_sent' || res['status'] == 'request_already_sent') {
+      setState(() => _isRequestSent = true);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Friend request sent!'), backgroundColor: Colors.green),
+        );
+      }
+    }
+  }
+
   void _reportPartner() {
     showDialog(
       context: context,
@@ -419,6 +432,12 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: Icon(_isRequestSent ? Icons.person_add_disabled_rounded : Icons.person_add_rounded),
+            color: _isRequestSent ? Colors.white54 : const Color(0xFF6C63FF),
+            onPressed: _isRequestSent ? null : _addFriend,
+            tooltip: 'Add Friend',
+          ),
           IconButton(
             icon: const Icon(Icons.flag_outlined),
             onPressed: _reportPartner,

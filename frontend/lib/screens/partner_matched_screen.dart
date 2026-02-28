@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'partner_chat_screen.dart';
+import '../services/friends_service.dart';
 
 class PartnerMatchedScreen extends StatefulWidget {
   final String targetLanguage;
@@ -23,6 +24,8 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
   Timer? _countdownTimer;
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
+  bool _isRequestSent = false;
+  final FriendsService _friendsService = FriendsService();
 
   // Extract partner data from matchData
   late Map<String, dynamic> partner;
@@ -101,7 +104,6 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
               matchId: matchId,
               partner: partner,
               targetLanguage: widget.targetLanguage,
-              websocketUrl: websocketUrl,
             ),
           ),
         );
@@ -303,6 +305,61 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                           fontStyle: FontStyle.italic,
                         ),
                         textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Add Friend Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _isRequestSent 
+                          ? null 
+                          : () async {
+                              try {
+                                print("DEBUG: Sending friend request to ${partner['user_id']}");
+                                final res = await _friendsService.sendFriendRequest(partner['user_id']);
+                                print("DEBUG: Friend request result: $res");
+                                if (res['status'] == 'request_sent' || res['status'] == 'request_already_sent') {
+                                  setState(() => _isRequestSent = true);
+                                } else if (res['status'] == 'error') {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error: ${res['message']}'), backgroundColor: Colors.red),
+                                    );
+                                  }
+                                } else if (res['status'] == 'already_friends') {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('You are already friends!')),
+                                    );
+                                    setState(() => _isRequestSent = true);
+                                  }
+                                }
+                              } catch (e) {
+                                print("DEBUG: Error sending friend request: $e");
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed to send request: $e'), backgroundColor: Colors.red),
+                                  );
+                                }
+                              }
+                            },
+                        icon: Icon(
+                          _isRequestSent ? Icons.check_circle : Icons.person_add_rounded,
+                          size: 18,
+                        ),
+                        label: Text(
+                          _isRequestSent ? 'Request Sent' : 'Add Friend',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _isRequestSent ? Colors.greenAccent : const Color(0xFF6C63FF),
+                          side: BorderSide(
+                            color: (_isRequestSent ? Colors.greenAccent : const Color(0xFF6C63FF)).withOpacity(0.5),
+                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                       ),
                     ),
                   ],
