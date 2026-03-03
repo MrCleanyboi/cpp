@@ -1,6 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _callStatusStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: const Color(0xFF00E5FF),
+  fontWeight: FontWeight.w600,
+  letterSpacing: 2,
+);
+
+final _callerNameStyle = GoogleFonts.outfit(
+  fontSize: 28,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _avatarTextStyle = GoogleFonts.outfit(
+  fontSize: 40, 
+  fontWeight: FontWeight.bold,
+);
+
+final _actionBtnLabelStyle = GoogleFonts.outfit(
+  color: Colors.white70, 
+  fontSize: 12,
+);
+
 class IncomingCallOverlay extends StatelessWidget {
   final String callerName;
   final String callerId;
@@ -40,21 +64,12 @@ class IncomingCallOverlay extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             'Incoming Call',
-            style: GoogleFonts.outfit(
-              fontSize: 16,
-              color: const Color(0xFF00E5FF),
-              fontWeight: FontWeight.w600,
-              letterSpacing: 2,
-            ),
+            style: _callStatusStyle,
           ),
           const SizedBox(height: 8),
           Text(
             callerName,
-            style: GoogleFonts.outfit(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+            style: _callerNameStyle,
           ),
           const SizedBox(height: 48),
           Row(
@@ -133,7 +148,7 @@ class _AnimatedAvatarState extends State<_AnimatedAvatar> with SingleTickerProvi
               backgroundColor: const Color(0xFF6C63FF),
               child: Text(
                 widget.initial,
-                style: GoogleFonts.outfit(fontSize: 40, fontWeight: FontWeight.bold),
+                style: _avatarTextStyle,
               ),
             ),
           ],
@@ -176,7 +191,7 @@ class _CallActionBtn extends StatelessWidget {
         const SizedBox(height: 12),
         Text(
           label,
-          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
+          style: _actionBtnLabelStyle,
         ),
       ],
     );

@@ -5,6 +5,88 @@ import '../services/gamification_service.dart';
 import '../services/auth_service.dart';
 import '../widgets/xp_animation_widget.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _appBarTitleStyle = GoogleFonts.outfit(fontWeight: FontWeight.bold);
+
+final _progressLabelStyle = GoogleFonts.outfit(
+  color: Colors.white38,
+  fontSize: 13,
+);
+
+final _wordTextStyle = GoogleFonts.outfit(
+  fontSize: 36,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+  letterSpacing: 0.5,
+);
+
+final _meaningTextStyle = GoogleFonts.outfit(
+  fontSize: 20,
+  color: Colors.amber,
+  fontStyle: FontStyle.italic,
+);
+
+final _exampleLabelStyle = GoogleFonts.outfit(
+  color: Colors.white30,
+  fontSize: 13,
+  letterSpacing: 1.5,
+);
+
+final _exampleSentenceStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  color: Colors.white,
+  fontWeight: FontWeight.w500,
+);
+
+final _exampleTranslationStyle = GoogleFonts.outfit(
+  fontSize: 15,
+  color: Colors.white38,
+  fontStyle: FontStyle.italic,
+);
+
+final _navButtonLabelStyle = GoogleFonts.outfit(color: Colors.white54);
+
+final _gotItButtonLabelStyle = GoogleFonts.outfit(
+  color: Colors.black87,
+  fontWeight: FontWeight.bold,
+  fontSize: 16,
+);
+
+final _completeTitleStyle = GoogleFonts.outfit(
+  fontSize: 30,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _completeDescStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white54,
+  height: 1.6,
+);
+
+final _xpBadgeTextStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+  color: Colors.amber,
+);
+
+final _letsGoButtonStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+  color: Colors.black87,
+);
+
+final _dialogTitleStyle = GoogleFonts.outfit(
+  color: Colors.white, 
+  fontWeight: FontWeight.bold,
+);
+
+final _dialogContentStyle = GoogleFonts.outfit(color: Colors.white60);
+
+final _dialogButtonStyle = GoogleFonts.outfit(color: Colors.white54);
+
+final _dialogLeaveButtonStyle = GoogleFonts.outfit(color: Colors.redAccent);
+
 /// Full-screen flashcard experience that teaches the key vocab for a unit
 /// before the user starts the actual quiz lessons.
 class VocabPreviewScreen extends StatefulWidget {
@@ -26,10 +108,6 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
   int _currentIndex = 0;
   bool _isComplete = false;
 
-  late AnimationController _cardController;
-  late Animation<double> _cardScaleAnim;
-  late Animation<double> _cardOpacityAnim;
-
   final GamificationService _gamificationService = GamificationService();
   final AuthService _authService = AuthService();
   String? _userId;
@@ -38,33 +116,16 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
   void initState() {
     super.initState();
     _loadUser();
-    _setupCardAnimation();
   }
 
   Future<void> _loadUser() async {
     _userId = await _authService.getUserId();
   }
 
-  void _setupCardAnimation() {
-    _cardController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 350),
-    );
-    _cardScaleAnim = Tween<double>(begin: 0.88, end: 1.0).animate(
-      CurvedAnimation(parent: _cardController, curve: Curves.easeOut),
-    );
-    _cardOpacityAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _cardController, curve: Curves.easeIn),
-    );
-    _cardController.forward();
-  }
-
   void _nextCard() {
     final total = widget.introLesson.vocabItems.length;
     if (_currentIndex < total - 1) {
-      _cardController.reset();
       setState(() => _currentIndex++);
-      _cardController.forward();
     } else {
       // All cards seen — award XP and show complete screen
       _finishPreview();
@@ -73,9 +134,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
 
   void _prevCard() {
     if (_currentIndex > 0) {
-      _cardController.reset();
       setState(() => _currentIndex--);
-      _cardController.forward();
     }
   }
 
@@ -98,7 +157,6 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
 
   @override
   void dispose() {
-    _cardController.dispose();
     super.dispose();
   }
 
@@ -109,7 +167,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
       appBar: AppBar(
         title: Text(
           widget.introLesson.title,
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          style: _appBarTitleStyle,
         ),
         backgroundColor: const Color(0xFF0F1117),
         foregroundColor: Colors.white,
@@ -153,10 +211,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                 const SizedBox(height: 4),
                 Text(
                   '${_currentIndex + 1} of $total',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white38,
-                    fontSize: 13,
-                  ),
+                  style: _progressLabelStyle,
                 ),
               ],
             ),
@@ -166,16 +221,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: AnimatedBuilder(
-                animation: _cardController,
-                builder: (context, child) => Transform.scale(
-                  scale: _cardScaleAnim.value,
-                  child: Opacity(
-                    opacity: _cardOpacityAnim.value,
-                    child: child,
-                  ),
-                ),
-                child: Container(
+              child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E212B),
@@ -217,12 +263,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                         child: Text(
                           item.word,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.outfit(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
+                          style: _wordTextStyle,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -237,11 +278,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                         ),
                         child: Text(
                           '"${item.meaning}"',
-                          style: GoogleFonts.outfit(
-                            fontSize: 20,
-                            color: Colors.amber,
-                            fontStyle: FontStyle.italic,
-                          ),
+                          style: _meaningTextStyle,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -257,11 +294,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                               padding: const EdgeInsets.symmetric(horizontal: 12),
                               child: Text(
                                 'Example',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white30,
-                                  fontSize: 13,
-                                  letterSpacing: 1.5,
-                                ),
+                                style: _exampleLabelStyle,
                               ),
                             ),
                             Expanded(
@@ -277,11 +310,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                         child: Text(
                           item.example,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.outfit(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: _exampleSentenceStyle,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -292,11 +321,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                         child: Text(
                           item.exampleTranslation,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.outfit(
-                            fontSize: 15,
-                            color: Colors.white38,
-                            fontStyle: FontStyle.italic,
-                          ),
+                          style: _exampleTranslationStyle,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -305,7 +330,6 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                 ),
               ),
             ),
-          ),
 
           // ── Nav Buttons ───────────────────────
           Padding(
@@ -321,7 +345,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                           color: Colors.white54),
                       label: Text(
                         'Back',
-                        style: GoogleFonts.outfit(color: Colors.white54),
+                        style: _navButtonLabelStyle,
                       ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.white12),
@@ -348,11 +372,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                       _currentIndex < widget.introLesson.vocabItems.length - 1
                           ? 'Got it!'
                           : 'Finish Preview',
-                      style: GoogleFonts.outfit(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                      style: _gotItButtonLabelStyle,
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
@@ -402,22 +422,14 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
 
               Text(
                 'Preview Complete!',
-                style: GoogleFonts.outfit(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: _completeTitleStyle,
               ),
               const SizedBox(height: 12),
 
               Text(
                 'You\'ve learned ${widget.introLesson.vocabItems.length} words and phrases.\nNow go crush those lessons!',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  color: Colors.white54,
-                  height: 1.6,
-                ),
+                style: _completeDescStyle,
               ),
               const SizedBox(height: 16),
 
@@ -433,11 +445,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                 ),
                 child: Text(
                   '✨ +5 XP  Earned',
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.amber,
-                  ),
+                  style: _xpBadgeTextStyle,
                 ),
               ),
               const SizedBox(height: 48),
@@ -449,11 +457,7 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
                     color: Colors.black87),
                 label: Text(
                   "Let's Go!",
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                  style: _letsGoButtonStyle,
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.amber,
@@ -483,25 +487,23 @@ class _VocabPreviewScreenState extends State<VocabPreviewScreen>
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Leave Preview?',
-          style: GoogleFonts.outfit(
-              color: Colors.white, fontWeight: FontWeight.bold),
+          style: _dialogTitleStyle,
         ),
         content: Text(
           'You can always come back and review these words.',
-          style: GoogleFonts.outfit(color: Colors.white60),
+          style: _dialogContentStyle,
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Stay',
-                  style: GoogleFonts.outfit(color: Colors.white54))),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Stay', style: _dialogButtonStyle),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               Navigator.pop(context);
             },
-            child: Text('Leave',
-                style: GoogleFonts.outfit(color: Colors.redAccent)),
+            child: Text('Leave', style: _dialogLeaveButtonStyle),
           ),
         ],
       ),

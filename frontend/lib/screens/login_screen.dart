@@ -4,6 +4,29 @@ import '../services/auth_service.dart';
 import 'home_screen.dart';
 import 'signup_screen.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _loginTitleStyle = GoogleFonts.outfit(
+  fontSize: 32,
+  fontWeight: FontWeight.bold,
+);
+
+final _loginSubStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white60,
+);
+
+final _loginBtnStyle = GoogleFonts.outfit(
+  fontSize: 18, 
+  fontWeight: FontWeight.w600,
+);
+
+final _signupPromptStyle = GoogleFonts.outfit(color: Colors.white60);
+
+final _signupBtnStyle = GoogleFonts.outfit(
+  color: const Color(0xFF6C63FF),
+  fontWeight: FontWeight.bold,
+);
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -77,18 +100,12 @@ class _LoginScreenState extends State<LoginScreen> {
               // Title
               Text(
                 'Welcome back!',
-                style: GoogleFonts.outfit(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: _loginTitleStyle,
               ),
               const SizedBox(height: 8),
               Text(
                 'Login to continue your learning journey',
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  color: Colors.white60,
-                ),
+                style: _loginSubStyle,
               ),
               const SizedBox(height: 48),
               
@@ -184,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       )
                     : Text(
                         'Login',
-                        style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600),
+                        style: _loginBtnStyle,
                       ),
               ),
               
@@ -196,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Text(
                     "Don't have an account? ",
-                    style: GoogleFonts.outfit(color: Colors.white60),
+                    style: _signupPromptStyle,
                   ),
                   TextButton(
                     onPressed: () {
@@ -207,10 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     child: Text(
                       'Sign up',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFF6C63FF),
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: _signupBtnStyle,
                     ),
                   ),
                 ],

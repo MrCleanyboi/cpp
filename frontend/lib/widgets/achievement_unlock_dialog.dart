@@ -2,6 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _achievementHeaderStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+  color: Colors.amber,
+  letterSpacing: 2,
+);
+
+final _achievementTitleStyle = GoogleFonts.outfit(
+  fontSize: 28,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _achievementDescStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white70,
+);
+
+final _rewardTextStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _awesomeBtnStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+);
+
 class AchievementUnlockDialog extends StatefulWidget {
   final Map<String, dynamic> achievement;
   final VoidCallback? onClose;
@@ -107,12 +137,7 @@ class _AchievementUnlockDialogState extends State<AchievementUnlockDialog>
                       // "Achievement Unlocked" header
                       Text(
                         'ACHIEVEMENT UNLOCKED!',
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber,
-                          letterSpacing: 2,
-                        ),
+                        style: _achievementHeaderStyle,
                       ),
                       const SizedBox(height: 24),
                       
@@ -158,11 +183,7 @@ class _AchievementUnlockDialogState extends State<AchievementUnlockDialog>
                       // Title
                       Text(
                         widget.achievement['title'] ?? 'Achievement',
-                        style: GoogleFonts.outfit(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                        style: _achievementTitleStyle,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 12),
@@ -170,10 +191,7 @@ class _AchievementUnlockDialogState extends State<AchievementUnlockDialog>
                       // Description
                       Text(
                         widget.achievement['description'] ?? '',
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          color: Colors.white70,
-                        ),
+                        style: _achievementDescStyle,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -193,20 +211,12 @@ class _AchievementUnlockDialogState extends State<AchievementUnlockDialog>
                           children: [
                             Text(
                               '✨ ${widget.achievement['xp_reward'] ?? 0} XP',
-                              style: GoogleFonts.outfit(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                              style: _rewardTextStyle,
                             ),
                             const SizedBox(width: 16),
                             Text(
                               '💎 ${widget.achievement['gem_reward'] ?? 0} Gems',
-                              style: GoogleFonts.outfit(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                              style: _rewardTextStyle,
                             ),
                           ],
                         ),
@@ -234,10 +244,7 @@ class _AchievementUnlockDialogState extends State<AchievementUnlockDialog>
                         ),
                         child: Text(
                           'Awesome!',
-                          style: GoogleFonts.outfit(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: _awesomeBtnStyle,
                         ),
                       ),
                     ],

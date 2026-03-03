@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'widgets/path_node.dart';
 import 'widgets/section_header.dart';
 import '../../models/lesson_model.dart';
-import '../../utils/language_theme.dart'; // Import LanguageTheme
+import '../../utils/language_theme.dart';
 import '../lesson_screen.dart';
 import '../vocab_preview_screen.dart';
 import '../../services/auth_service.dart';
@@ -21,9 +21,9 @@ class LearningPathScreen extends StatefulWidget {
 
 class _LearningPathScreenState extends State<LearningPathScreen> {
   List<String> _completedLessons = [];
+  List<dynamic> _pathItems = [];
   bool _isLoading = true;
 
-  // Static course data — defined at class level to avoid re-allocation on every build
   static final Map<String, List<Map<String, dynamic>>> _courseData = {
     'de': [
       { 'level': 'Beginner', 'title': 'The Café', 'desc': 'Ordering food and drinks', 'unitNum': 1, 'color_key': 'primary', 'lessons': [ {'title': 'Ordering Coffee', 'icon': Icons.coffee, 'id': 'l1'}, {'title': 'The Menu', 'icon': Icons.restaurant_menu, 'id': 'l2'}, {'title': 'Paying the Bill', 'icon': Icons.receipt_long, 'id': 'l3'} ] },
@@ -66,6 +66,14 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
     _loadCompletedLessons();
   }
 
+  @override
+  void didUpdateWidget(covariant LearningPathScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.targetLanguage != widget.targetLanguage) {
+      _loadCompletedLessons();
+    }
+  }
+
   Future<void> _loadCompletedLessons() async {
     try {
       final user = await AuthService.getUser();
@@ -77,37 +85,25 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
           final langProg = languageProgress[widget.targetLanguage];
           final completed = langProg['completed_lessons'];
           if (completed is List) {
-            setState(() {
-              _completedLessons = completed.map((e) => e.toString()).toList();
-              _isLoading = false;
-            });
-            return;
+            _completedLessons = completed.map((e) => e.toString()).toList();
           }
         }
       }
-      setState(() => _isLoading = false);
     } catch (e) {
       print('Error loading completed lessons: $e');
-      setState(() => _isLoading = false);
+    } finally {
+      _generatePathItems();
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
-  bool _isLessonCompleted(String lessonId) => _completedLessons.contains(lessonId);
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF11141C),
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
+  void _generatePathItems() {
+    final List<dynamic> items = [];
     final theme = LanguageTheme.getTheme(widget.targetLanguage);
-    final List<dynamic> pathItems = [];
     final units = _courseData[widget.targetLanguage] ?? _courseData['de']!;
-    
-    // Flatten logic
+
     for (int s = 0; s < units.length; s++) {
       final unit = units[s];
       final String levelName = unit['level'];
@@ -122,7 +118,7 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
       final List<Map<String, dynamic>> lessons = unit['lessons'];
 
       // Unit Header
-      pathItems.add({
+      items.add({
         'type': 'header', 
         'title': '$levelName - $unitTitle', 
         'desc': unitDesc, 
@@ -130,40 +126,31 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
         'unitId': '${widget.targetLanguage}_u$unitNum',
       });
 
-      // Track lesson count within this unit for snake pattern
       int sectionLessonCount = 0;
-
       for (int l = 0; l < lessons.length; l++) {
         final lessonData = lessons[l];
-        final int lessonNum = l + 1; // 1-based index within unit
-        
-        // Construct Backend-Matching ID: {lang}_u{unit}_l{lesson}
+        final int lessonNum = l + 1;
         final String fullLessonId = '${widget.targetLanguage}_u${unitNum}_l${lessonNum}';
         
-        // Unlock logic
         bool isUnlocked = false;
         if (unitNum == 1 && lessonNum == 1) {
            isUnlocked = true;
         } else {
-           // Find previous lesson ID
            String prevId;
            if (lessonNum > 1) {
               prevId = '${widget.targetLanguage}_u${unitNum}_l${lessonNum - 1}';
            } else {
-              // Previous unit's last lesson (Lesson 3)
               prevId = '${widget.targetLanguage}_u${unitNum - 1}_l3'; 
            }
-           isUnlocked = _isLessonCompleted(prevId);
+           isUnlocked = _completedLessons.contains(prevId);
         }
 
-        final bool isCompleted = _isLessonCompleted(fullLessonId);
-        
-        // Snake Pattern
+        final bool isCompleted = _completedLessons.contains(fullLessonId);
         final positions = [0.0, 0.4, 0.0, -0.4];
         final double x = positions[sectionLessonCount % positions.length];
         sectionLessonCount++;
 
-        pathItems.add({
+        items.add({
           'type': 'node', 
           'title': lessonData['title'], 
           'icon': lessonData['icon'], 
@@ -174,6 +161,19 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
         });
       }
     }
+    _pathItems = items;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF11141C),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final theme = LanguageTheme.getTheme(widget.targetLanguage);
 
     return Scaffold(
       backgroundColor: const Color(0xFF11141C),
@@ -188,12 +188,12 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
         color: theme.primaryColor,
         child: RepaintBoundary(
           child: ListView.builder(
-          cacheExtent: 200,
+            cacheExtent: 500, // Balanced for smoothness vs memory
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.only(bottom: 100),
-            itemCount: pathItems.length,
+            itemCount: _pathItems.length,
             itemBuilder: (context, index) {
-              final item = pathItems[index];
+              final item = _pathItems[index];
 
               if (item['type'] == 'header') {
                 return SectionHeader(
@@ -220,7 +220,7 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
                   },
                 );
               } else {
-                return _buildPathNodeRow(context, item, index, pathItems);
+                return _buildPathNodeRow(context, item);
               }
             },
           ),
@@ -229,7 +229,7 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
     );
   }
 
-  Widget _buildPathNodeRow(BuildContext context, Map<String, dynamic> item, int index, List<dynamic> allItems) {
+  Widget _buildPathNodeRow(BuildContext context, Map<String, dynamic> item) {
     final status = item['status'];
     final bool isLocked = status == 'locked';
     final bool isCompleted = status == 'completed';
@@ -273,6 +273,3 @@ class _LearningPathScreenState extends State<LearningPathScreen> {
     );
   }
 }
-
-
-

@@ -6,6 +6,30 @@ import '../services/auth_service.dart';
 import '../widgets/xp_animation_widget.dart';
 import '../widgets/achievement_unlock_dialog.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _headerStyle = GoogleFonts.outfit(
+  fontSize: 24,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _dialogTitleStyle = GoogleFonts.outfit(
+  fontSize: 28,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _achievementBadgeStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  fontWeight: FontWeight.bold,
+  color: Colors.amber,
+);
+
+final _xpLabelStyle = GoogleFonts.outfit(
+  fontSize: 20,
+  color: Colors.white70,
+);
+
 class LessonScreen extends StatefulWidget {
   final Lesson lesson;
 
@@ -79,14 +103,16 @@ class _LessonScreenState extends State<LessonScreen> {
       _feedbackMessage = correct ? "Great job!" : "Correct answer: $correctAnswer";
       
       if (correct) {
-        // Increment progress immediately only if correct
         _progress = (_currentIndex + 1) / widget.lesson.exercises.length;
       } else {
-        // Wrong answer - lose a heart
         _mistakesCount++;
-        _loseHeart();
       }
     });
+
+    // Fire-and-forget heart loss — runs in background, never blocks UI
+    if (!correct) {
+      _loseHeart();
+    }
   }
 
   
@@ -99,49 +125,35 @@ class _LessonScreenState extends State<LessonScreen> {
     }
   }
   
-  Future<void> _completeLesson() async {
-    if (_userId == null) return;
-    try {
+  void _completeLesson() {
+    // 1. Show the dialog IMMEDIATELY with default values — zero network wait.
+    if (mounted) {
+      showXPAnimation(context, xpGained: 10);
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted) _showCompletionDialog({'xp_gained': 10, 'perfect': _mistakesCount == 0});
+      });
+    }
+
+    // 2. Post the result to the backend in the background.
+    //    We never await this — if it fails, progress is still saved server-side next time.
+    if (_userId != null) {
       final timeSpent = DateTime.now().difference(_lessonStartTime!).inMinutes;
-      
-      final result = await _gamificationService.completeLesson(
+      _gamificationService.completeLesson(
         userId: _userId!,
-        lessonId: widget.lesson.id, // Pass lesson ID for per-language tracking
+        lessonId: widget.lesson.id,
         perfect: _mistakesCount == 0,
         timeSpentMinutes: timeSpent,
-      );
-      
-      // Check for achievements
-      if (result['achievements_earned'] != null && 
-          (result['achievements_earned'] as List).isNotEmpty) {
-        // Show first achievement
-        final firstAchievement = (result['achievements_earned'] as List)[0];
-        if (mounted) {
-          showAchievementUnlock(context, firstAchievement);
+      ).then((result) {
+        // If the server gave us richer data, the dialog is already shown — that's fine.
+        // Optionally show achievement if one was earned.
+        if (mounted &&
+            result['achievements_earned'] != null &&
+            (result['achievements_earned'] as List).isNotEmpty) {
+          showAchievementUnlock(context, (result['achievements_earned'] as List)[0]);
         }
-      }
-      
-      // Show XP animation
-      if (mounted) {
-        showXPAnimation(
-          context,
-          xpGained: result['xp_gained'] ?? 10,
-          showLevelUp: result['level_up'] ?? false,
-          newLevel: result['new_level'],
-        );
-      }
-      
-      // Wait a moment then show completion dialog
-      await Future.delayed(const Duration(milliseconds: 1500));
-      if (mounted) {
-        _showCompletionDialog(result);
-      }
-    } catch (e) {
-      print('Error completing lesson: $e');
-      // Show completion dialog anyway
-      if (mounted) {
-        _showCompletionDialog({});
-      }
+      }).catchError((e) {
+        print('Background completeLesson failed (non-critical): $e');
+      });
     }
   }
   
@@ -178,11 +190,7 @@ class _LessonScreenState extends State<LessonScreen> {
             const SizedBox(height: 16),
             Text(
               "Lesson Complete!",
-              style: GoogleFonts.outfit(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: _dialogTitleStyle,
             ),
             const SizedBox(height: 8),
             if (perfect)
@@ -194,20 +202,13 @@ class _LessonScreenState extends State<LessonScreen> {
                 ),
                 child: Text(
                   'PERFECT! NO MISTAKES',
-                  style: GoogleFonts.outfit(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.amber,
-                  ),
+                  style: _achievementBadgeStyle,
                 ),
               ),
             const SizedBox(height: 16),
             Text(
               'You earned $xpGained XP',
-              style: GoogleFonts.outfit(
-                fontSize: 20,
-                color: Colors.white70,
-              ),
+              style: _xpLabelStyle,
             ),
           ],
         ),
@@ -261,11 +262,7 @@ class _LessonScreenState extends State<LessonScreen> {
                   const SizedBox(height: 16),
                   Text(
                     currentExercise.question,
-                    style: GoogleFonts.outfit(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold, // Fixed weight
-                      color: Colors.white,
-                    ),
+                    style: _headerStyle,
                   ),
                   const SizedBox(height: 32),
                   

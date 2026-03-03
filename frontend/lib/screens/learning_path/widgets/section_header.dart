@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _headerLabelStyle = GoogleFonts.outfit(
+  color: Colors.white.withOpacity(0.9),
+  fontSize: 12,
+  fontWeight: FontWeight.bold,
+  letterSpacing: 1.2,
+);
+
+final _headerDescStyle = GoogleFonts.outfit(
+  color: Colors.white,
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+);
+
 class SectionHeader extends StatelessWidget {
   final String title;
   final String description;
@@ -44,21 +58,12 @@ class SectionHeader extends StatelessWidget {
                     children: [
                       Text(
                         title.toUpperCase(),
-                        style: GoogleFonts.outfit(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
+                        style: _headerLabelStyle,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         description,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: _headerDescStyle,
                       ),
                     ],
                   ),

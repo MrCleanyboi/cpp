@@ -7,7 +7,6 @@ Lexico is a polished AI-powered language learning application built with Flutter
 2. **Python** (3.10+)
 3. **MongoDB** (running locally or via Atlas)
 4. **Gemini API Key** (from Google AI Studio)
-5. **ffmpeg** (needed for AI voice transcription)
 
 ---
 
@@ -43,14 +42,10 @@ Lexico is a polished AI-powered language learning application built with Flutter
    ```bash
    flutter pub get
    ```
-3. **Remote Testing (Ngrok):**
-   - If testing on a physical device, start an ngrok tunnel: `ngrok http 8000`
-   - Update `NGROK_HOST` in your backend `.env`.
-   - Update `_ngrokHost` in `lib/config/api_config.dart`.
-4. Run the app:
-   ```bash
-   flutter run
-   ```
+3. **Run the app**:
+   - **Android Emulator**: Run `flutter run` (Connects to `10.0.2.2`).
+   - **Chrome/Web**: Run `flutter run -d chrome` (Connects to `localhost`).
+   - **Desktop**: Run `flutter run` (Connects to `127.0.0.1`).
 
 ## 🛠 Features
 - **Learning Path:** Curated lessons with interactive exercises.

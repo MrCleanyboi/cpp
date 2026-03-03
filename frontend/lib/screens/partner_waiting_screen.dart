@@ -4,6 +4,39 @@ import 'package:google_fonts/google_fonts.dart';
 import 'partner_matched_screen.dart';
 import '../services/matching_api_service.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _findingTitleStyle = GoogleFonts.outfit(
+  fontSize: 28,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _findingSubStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white60,
+);
+
+final _waitValueStyle = GoogleFonts.outfit(
+  fontSize: 20,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _waitLabelStyle = GoogleFonts.outfit(
+  fontSize: 12,
+  color: Colors.white54,
+);
+
+final _tipTextStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white70,
+);
+
+final _cancelBtnStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white70,
+);
+
 class PartnerWaitingScreen extends StatefulWidget {
   final String targetLanguage;
   final String practiceMode;
@@ -175,21 +208,14 @@ class _PartnerWaitingScreenState extends State<PartnerWaitingScreen>
 
               Text(
                 'Finding Partner',
-                style: GoogleFonts.outfit(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: _findingTitleStyle,
               ),
 
               const SizedBox(height: 12),
 
               Text(
                 'Searching for ${widget.targetLanguage} speakers...',
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  color: Colors.white60,
-                ),
+                style: _findingSubStyle,
                 textAlign: TextAlign.center,
               ),
 
@@ -255,10 +281,7 @@ class _PartnerWaitingScreenState extends State<PartnerWaitingScreen>
                     Expanded(
                       child: Text(
                         'Tip: Be polite and patient with your partner!',
-                        style: GoogleFonts.outfit(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
+                        style: _tipTextStyle,
                       ),
                     ),
                   ],
@@ -279,10 +302,7 @@ class _PartnerWaitingScreenState extends State<PartnerWaitingScreen>
                 ),
                 child: Text(
                   'Cancel Search',
-                  style: GoogleFonts.outfit(
-                    fontSize: 16,
-                    color: Colors.white70,
-                  ),
+                  style: _cancelBtnStyle,
                 ),
               ),
 
@@ -310,18 +330,11 @@ class _PartnerWaitingScreenState extends State<PartnerWaitingScreen>
           const SizedBox(height: 8),
           Text(
             value,
-            style: GoogleFonts.outfit(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+            style: _waitValueStyle,
           ),
           Text(
             label,
-            style: GoogleFonts.outfit(
-              fontSize: 12,
-              color: Colors.white54,
-            ),
+            style: _waitLabelStyle,
           ),
         ],
       ),

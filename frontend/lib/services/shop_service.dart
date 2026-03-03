@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 
+const _kTimeout = Duration(seconds: 8);
+
 class ShopService {
   String get baseUrl => '${ApiConfig.baseUrl}/api/shop';
 
   Future<List<dynamic>> getShopItems() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/items'));
+      final response = await http.get(Uri.parse('$baseUrl/items')).timeout(_kTimeout);
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
@@ -28,7 +30,7 @@ class ShopService {
           'user_id': userId,
           'item_id': itemId,
         }),
-      );
+      ).timeout(_kTimeout);
       
       final data = json.decode(response.body);
       if (response.statusCode == 200) {
@@ -51,7 +53,7 @@ class ShopService {
           'user_id': userId,
           'item_id': itemId,
         }),
-      );
+      ).timeout(_kTimeout);
       
       final data = json.decode(response.body);
       if (response.statusCode == 200) {

@@ -4,8 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
-import 'api_service.dart';
 import '../config/api_config.dart';
+
+const _kTimeout = Duration(seconds: 8);
 
 class FriendsService extends ChangeNotifier {
   static final FriendsService _instance = FriendsService._internal();
@@ -77,7 +78,7 @@ class FriendsService extends ChangeNotifier {
       final res = await http.post(
         Uri.parse(url),
         headers: headers,
-      );
+      ).timeout(_kTimeout);
       print('DEBUG: Response code: ${res.statusCode}, body: ${res.body}');
       return jsonDecode(res.body);
     } catch (e) {
@@ -92,7 +93,7 @@ class FriendsService extends ChangeNotifier {
       final res = await http.post(
         Uri.parse('${AuthService.baseUrl}/friends/accept/$fromUserId'),
         headers: headers,
-      );
+      ).timeout(_kTimeout);
 
       return jsonDecode(res.body);
     } catch (e) {
@@ -106,7 +107,7 @@ class FriendsService extends ChangeNotifier {
       final res = await http.get(
         Uri.parse('${AuthService.baseUrl}/friends/'),
         headers: headers,
-      );
+      ).timeout(_kTimeout);
 
       if (res.statusCode == 200) {
         return jsonDecode(res.body);
@@ -123,7 +124,7 @@ class FriendsService extends ChangeNotifier {
       final res = await http.get(
         Uri.parse('${AuthService.baseUrl}/friends/requests'),
         headers: headers,
-      );
+      ).timeout(_kTimeout);
 
       if (res.statusCode == 200) {
         return jsonDecode(res.body);
@@ -140,7 +141,7 @@ class FriendsService extends ChangeNotifier {
       final res = await http.post(
         Uri.parse('${AuthService.baseUrl}/friends/call/$friendId'),
         headers: headers,
-      );
+      ).timeout(_kTimeout);
 
       return jsonDecode(res.body);
     } catch (e) {

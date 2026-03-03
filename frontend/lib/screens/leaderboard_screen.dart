@@ -2,6 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/gamification_service.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _tabLabelStyle = GoogleFonts.outfit(fontWeight: FontWeight.w600);
+
+final _rankTop3Style = GoogleFonts.outfit(
+  fontSize: 28,
+  fontWeight: FontWeight.bold,
+);
+
+final _rankNormalStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+);
+
+final _avatarInitialStyle = GoogleFonts.outfit(
+  fontSize: 20,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _nameTextStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+);
+
+final _levelTextStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white54,
+);
+
+final _xpTextStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  fontWeight: FontWeight.bold,
+);
+
+final _gemRewardStyle = GoogleFonts.outfit(
+  fontSize: 13,
+  fontWeight: FontWeight.bold,
+  color: const Color(0xFF00E5FF),
+);
+
 class LeaderboardScreen extends StatefulWidget {
   final String userId;
   
@@ -93,7 +133,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
         title: const Text('Leaderboard'),
         bottom: TabBar(
           controller: _tabController,
-          labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+          labelStyle: _tabLabelStyle,
           indicatorColor: Theme.of(context).primaryColor,
           tabs: const [
             Tab(text: 'Weekly'),
@@ -139,10 +179,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
             width: 40,
             child: Text(
               isTop3 ? _getRankEmoji(entry['rank']) : '#${entry['rank']}',
-              style: GoogleFonts.outfit(
-                fontSize: isTop3 ? 28 : 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: isTop3 ? _rankTop3Style : _rankNormalStyle,
               textAlign: TextAlign.center,
             ),
           ),
@@ -159,11 +196,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
             child: Center(
               child: Text(
                 entry['display_name'][0].toUpperCase(),
-                style: GoogleFonts.outfit(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: _avatarInitialStyle,
               ),
             ),
           ),
@@ -176,20 +209,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
               children: [
                 Text(
                   entry['display_name'],
-                  style: GoogleFonts.outfit(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: _nameTextStyle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Level ${entry['level']}',
-                  style: GoogleFonts.outfit(
-                    fontSize: 14,
-                    color: Colors.white54,
-                  ),
+                  style: _levelTextStyle,
                 ),
               ],
             ),
@@ -204,11 +231,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
             ),
             child: Text(
               '${entry['xp']} XP',
-              style: GoogleFonts.outfit(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
+              style: _xpTextStyle.copyWith(color: Theme.of(context).colorScheme.secondary),
             ),
           ),
 
@@ -227,11 +250,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
               ),
               child: Text(
                 '+${_getGemReward(entry['rank'])} 💎',
-                style: GoogleFonts.outfit(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF00E5FF),
-                ),
+                style: _gemRewardStyle,
               ),
             ),
           ],

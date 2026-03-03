@@ -1,6 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _levelUpTitleStyle = GoogleFonts.outfit(
+  fontSize: 24,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _levelUpSubStyle = GoogleFonts.outfit(
+  fontSize: 20,
+  color: Colors.white70,
+);
+
+final _xpGainedStyle = GoogleFonts.outfit(
+  fontSize: 28,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
 class XPAnimationWidget extends StatefulWidget {
   final int xpGained;
   final bool showLevelUp;
@@ -117,18 +135,11 @@ class _XPAnimationWidgetState extends State<XPAnimationWidget>
                       const SizedBox(height: 8),
                       Text(
                         'LEVEL UP!',
-                        style: GoogleFonts.outfit(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                        style: _levelUpTitleStyle,
                       ),
                       Text(
                         'Level ${widget.newLevel}',
-                        style: GoogleFonts.outfit(
-                          fontSize: 20,
-                          color: Colors.white70,
-                        ),
+                        style: _levelUpSubStyle,
                       ),
                       const SizedBox(height: 8),
                     ],
@@ -142,11 +153,7 @@ class _XPAnimationWidgetState extends State<XPAnimationWidget>
                         const SizedBox(width: 8),
                         Text(
                           '+${widget.xpGained} XP',
-                          style: GoogleFonts.outfit(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                          style: _xpGainedStyle,
                         ),
                       ],
                     ),

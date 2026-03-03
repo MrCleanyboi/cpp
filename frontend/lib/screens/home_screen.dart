@@ -31,8 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
   int _hearts = 5;
   final FriendsService _friendsService = FriendsService();
   StreamSubscription? _friendsSubscription;
-  List<Widget>? _cachedScreens;
+  List<Widget?>? _cachedScreens;
   String? _cachedLanguage;
+  String? _lastUserId;
 
   @override
   void initState() {
@@ -103,21 +104,39 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadUserData() async {
+    // 1. Read cached userId — instant from memory cache.
     final userId = await _authService.getUserId();
-    final user = await AuthService.getUser();
+    if (userId == null) {
+      // Not logged in — nothing to load.
+      if (mounted) setState(() => _userId = '');
+      return;
+    }
+
+    // Set userId immediately so the UI renders without waiting for HTTP.
+    if (mounted) setState(() => _userId = userId);
+
+    // 2. Fire both HTTP calls IN PARALLEL — saves ~300-500ms vs sequential.
+    final results = await Future.wait([
+      AuthService.getUser().catchError((_) => null),
+      _gamificationService.getUserProfile(userId).catchError((_) => <String, dynamic>{}),
+    ]);
+
+    final user = results[0] as Map<String, dynamic>?;
+    final profile = results[1] as Map<String, dynamic>;
 
     if (mounted) {
       setState(() {
-        _userId = userId;
-        _targetLanguage = user?['target_language'] ?? 'en';
-        // Invalidate cached screens since userId/language may have changed
-        _cachedScreens = null;
-        _cachedLanguage = null;
+        _targetLanguage = user?['target_language'] ?? _targetLanguage;
+        _gems = (profile['gems'] as num?)?.toInt() ?? _gems;
+        _hearts = (profile['hearts'] as num?)?.toInt() ?? _hearts;
+        
+        // IMPORTANT: Invalidate cache if language OR userId changed
+        if (_cachedLanguage != _targetLanguage || _lastUserId != _userId) {
+          _cachedScreens = null;
+          _cachedLanguage = _targetLanguage;
+          _lastUserId = _userId;
+        }
       });
-    }
-
-    if (userId != null) {
-      await _loadGamificationStats(userId);
     }
   }
 
@@ -135,11 +154,30 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> refreshLanguage() async {
+
+  Future<void> refreshLanguage([String? newLanguage]) async {
+    if (newLanguage != null) {
+      if (mounted) {
+        setState(() {
+          if (_targetLanguage != newLanguage) {
+            _targetLanguage = newLanguage;
+            _cachedScreens = null; // Forced reload
+            _cachedLanguage = newLanguage;
+          }
+        });
+      }
+      return;
+    }
+
     final user = await AuthService.getUser();
     if (mounted && user != null) {
       setState(() {
-        _targetLanguage = user['target_language'] ?? 'en';
+        final backendLanguage = user['target_language'] ?? 'en';
+        if (_targetLanguage != backendLanguage) {
+          _targetLanguage = backendLanguage;
+          _cachedScreens = null; // Forced reload
+          _cachedLanguage = backendLanguage;
+        }
       });
     }
   }
@@ -149,38 +187,54 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       _targetLanguage,
       (newLanguage) {
-        refreshLanguage();
+        refreshLanguage(newLanguage);
       },
     );
   }
 
   List<Widget> _getScreens() {
-    if (_cachedScreens != null &&
-        _cachedLanguage == _targetLanguage &&
-        _cachedScreens!.length == 4) {
-      return _cachedScreens!;
+    // 1. Initialize the fixed-size list if null or invalidated
+    if (_cachedScreens == null || _cachedScreens!.length != 4) {
+      _cachedScreens = List<Widget?>.filled(4, null);
+      _cachedLanguage = _targetLanguage;
+      _lastUserId = _userId;
     }
-    _cachedLanguage = _targetLanguage;
-    _cachedScreens = [
-      LearningPathScreen(
-        key: ValueKey(_targetLanguage),
-        targetLanguage: _targetLanguage,
-      ),
-      ChatScreen(topic: _targetLanguage == 'de' ? 'German Basics' : 'General Practice'),
-      const PartnerMatchingScreen(),
-      ProfileScreen(userId: _userId ?? ''),
-    ];
-    return _cachedScreens!;
+
+    // 2. Lazy-instantiate ONLY the current screen if it doesn't exist
+    if (_cachedScreens![_currentIndex] == null) {
+      switch (_currentIndex) {
+        case 0:
+          _cachedScreens![0] = LearningPathScreen(
+            key: ValueKey('lp_$_targetLanguage'),
+            targetLanguage: _targetLanguage,
+          );
+          break;
+        case 1:
+          _cachedScreens![1] = ChatScreen(
+            key: ValueKey('chat_$_targetLanguage'),
+            topic: _targetLanguage == 'de' ? 'German Basics' : 'General Practice',
+          );
+          break;
+        case 2:
+          _cachedScreens![2] = const PartnerMatchingScreen();
+          break;
+        case 3:
+          _cachedScreens![3] = ProfileScreen(
+            key: ValueKey('profile_$_userId'),
+            userId: _userId ?? '',
+          );
+          break;
+      }
+    }
+
+    // 3. Return the list, but indexedStack expects non-null widgets.
+    // Replace any null entries with a placeholder so IndexedStack doesn't crash,
+    // though the switch logic above ensures the *current* index is always filled.
+    return _cachedScreens!.map((w) => w ?? const SizedBox.shrink()).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    print('DEBUG: HomeScreen build. Current Tab: $_currentIndex');
-    if (_userId == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1117),

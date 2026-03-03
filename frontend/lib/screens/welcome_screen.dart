@@ -3,6 +3,23 @@ import 'package:google_fonts/google_fonts.dart';
 import 'signup_screen.dart';
 import 'login_screen.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _welcomeTitleStyle = GoogleFonts.outfit(
+  fontSize: 36,
+  fontWeight: FontWeight.bold,
+);
+
+final _welcomeSubStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white60,
+  height: 1.5,
+);
+
+final _buttonTextStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.w600,
+);
+
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -39,10 +56,7 @@ class WelcomeScreen extends StatelessWidget {
               // Title
               Text(
                 'Lexico',
-                style: GoogleFonts.outfit(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: _welcomeTitleStyle,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -50,11 +64,7 @@ class WelcomeScreen extends StatelessWidget {
               // Subtitle
               Text(
                 'Learn languages with AI-powered\nconversations and live partners',
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  color: Colors.white60,
-                  height: 1.5,
-                ),
+                style: _welcomeSubStyle,
                 textAlign: TextAlign.center,
               ),
               
@@ -78,10 +88,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 child: Text(
                   'Get Started',
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: _buttonTextStyle,
                 ),
               ),
               const SizedBox(height: 16),
@@ -103,11 +110,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 child: Text(
                   'I already have an account',
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF6C63FF),
-                  ),
+                  style: _buttonTextStyle.copyWith(color: const Color(0xFF6C63FF)),
                 ),
               ),
               

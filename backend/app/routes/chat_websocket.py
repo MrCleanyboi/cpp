@@ -17,6 +17,7 @@ from bson import ObjectId
 import json
 import logging
 import sys
+import traceback
 
 def debug_log(message):
     print(f"WS_DEBUG: {message}", flush=True)

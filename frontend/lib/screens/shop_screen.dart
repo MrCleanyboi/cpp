@@ -3,6 +3,15 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/shop_service.dart';
 import '../services/gamification_service.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _shopTitleStyle = GoogleFonts.outfit(fontWeight: FontWeight.bold);
+
+final _gemBalanceStyle = GoogleFonts.outfit(fontWeight: FontWeight.bold);
+
+final _itemNameStyle = GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16);
+
+final _itemDescStyle = GoogleFonts.outfit(fontSize: 12, color: Colors.white54);
+
 class ShopScreen extends StatefulWidget {
   final String userId;
 
@@ -91,7 +100,7 @@ class _ShopScreenState extends State<ShopScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F1014),
       appBar: AppBar(
-        title: Text('Shop', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text('Shop', style: _shopTitleStyle),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -112,7 +121,7 @@ class _ShopScreenState extends State<ShopScreen> {
                       const SizedBox(width: 4),
                       Text(
                         '${_userProfile!['gems']}',
-                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                        style: _gemBalanceStyle,
                       ),
                     ],
                   ),
@@ -178,14 +187,14 @@ class _ShopScreenState extends State<ShopScreen> {
               children: [
                 Text(
                   item['name'],
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: _itemNameStyle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   item['description'],
-                  style: GoogleFonts.outfit(fontSize: 12, color: Colors.white54),
+                  style: _itemDescStyle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

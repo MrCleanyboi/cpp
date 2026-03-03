@@ -2,6 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _sheetTitleStyle = GoogleFonts.outfit(
+  fontSize: 24,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _sheetDescStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white60,
+);
+
+final _langNameStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _langNativeStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white60,
+);
+
 class LanguageSelectorSheet extends StatefulWidget {
   final String currentLanguage;
   final Function(String) onLanguageSelected;
@@ -69,11 +92,7 @@ class _LanguageSelectorSheetState extends State<LanguageSelectorSheet> {
             children: [
               Text(
                 'Choose Language',
-                style: GoogleFonts.outfit(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: _sheetTitleStyle,
               ),
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.white),
@@ -84,10 +103,7 @@ class _LanguageSelectorSheetState extends State<LanguageSelectorSheet> {
           const SizedBox(height: 8),
           Text(
             'Your progress is saved for each language',
-            style: GoogleFonts.outfit(
-              fontSize: 14,
-              color: Colors.white60,
-            ),
+            style: _sheetDescStyle,
           ),
           const SizedBox(height: 24),
 
@@ -126,18 +142,11 @@ class _LanguageSelectorSheetState extends State<LanguageSelectorSheet> {
                           children: [
                             Text(
                               lang['name']!,
-                              style: GoogleFonts.outfit(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                              style: _langNameStyle,
                             ),
                             Text(
                               lang['native']!,
-                              style: GoogleFonts.outfit(
-                                fontSize: 14,
-                                color: Colors.white60,
-                              ),
+                              style: _langNativeStyle,
                             ),
                           ],
                         ),

@@ -7,6 +7,79 @@ import '../services/friends_service.dart';
 import 'partner_chat_screen.dart';
 import 'shop_screen.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _avatarInitialStyle = GoogleFonts.outfit(
+  fontSize: 48,
+  fontWeight: FontWeight.bold,
+);
+
+final _nameTextStyle = GoogleFonts.outfit(
+  fontSize: 24,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _usernameTextStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white70,
+);
+
+final _levelTitleStyle = GoogleFonts.outfit(
+  fontSize: 20,
+  fontWeight: FontWeight.bold,
+);
+
+final _xpTextStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white70,
+);
+
+final _nextLevelStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white54,
+);
+
+final _dailyGoalTitleStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+);
+
+final _completedBadgeStyle = GoogleFonts.outfit(
+  fontSize: 12,
+  fontWeight: FontWeight.bold,
+  color: Colors.greenAccent,
+);
+
+final _dailyXpStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white70,
+);
+
+final _sectionHeaderStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+);
+
+final _pendingHeaderStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+  color: Colors.amberAccent,
+);
+
+final _friendNameStyle = GoogleFonts.outfit(fontWeight: FontWeight.bold);
+
+final _noFriendsStyle = GoogleFonts.outfit(color: Colors.white30);
+
+final _statValueStyle = GoogleFonts.outfit(
+  fontSize: 20,
+  fontWeight: FontWeight.bold,
+);
+
+final _statLabelStyle = GoogleFonts.outfit(
+  fontSize: 12,
+  color: Colors.white54,
+);
+
 class ProfileScreen extends StatefulWidget {
   final String userId;
   
@@ -253,30 +326,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Center(
                       child: Text(
                         (profile['display_name'] as String)[0].toUpperCase(),
-                        style: GoogleFonts.outfit(
-                          fontSize: 48,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
+                        style: _avatarInitialStyle.copyWith(color: Theme.of(context).primaryColor),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     profile['display_name'],
-                    style: GoogleFonts.outfit(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    style: _nameTextStyle,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '@${profile['username']}',
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
+                    style: _usernameTextStyle,
                   ),
                 ],
               ),
@@ -293,17 +355,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(
                         'Level ${profile['level']}',
-                        style: GoogleFonts.outfit(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: _levelTitleStyle,
                       ),
                       Text(
                         '${profile['xp']} XP',
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          color: Colors.white70,
-                        ),
+                        style: _xpTextStyle,
                       ),
                     ],
                   ),
@@ -322,10 +378,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 8),
                   Text(
                     '${profile['xp_to_next_level']} XP to Level ${profile['level'] + 1}',
-                    style: GoogleFonts.outfit(
-                      fontSize: 14,
-                      color: Colors.white54,
-                    ),
+                    style: _nextLevelStyle,
                   ),
                 ],
               ),
@@ -385,10 +438,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Text(
                           'Daily Goal',
-                          style: GoogleFonts.outfit(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: _dailyGoalTitleStyle,
                         ),
                         if (profile['daily_goal_met'])
                           Container(
@@ -402,11 +452,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             child: Text(
                               'COMPLETED',
-                              style: GoogleFonts.outfit(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.greenAccent,
-                              ),
+                              style: _completedBadgeStyle,
                             ),
                           ),
                       ],
@@ -427,10 +473,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 8),
                     Text(
                       '${profile['daily_xp_earned']} / ${profile['daily_goal_xp']} XP',
-                      style: GoogleFonts.outfit(
-                        fontSize: 14,
-                        color: Colors.white70,
-                      ),
+                      style: _dailyXpStyle,
                     ),
                   ],
                 ),
@@ -448,11 +491,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     Text(
                       'Pending Requests',
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.amberAccent,
-                      ),
+                      style: _pendingHeaderStyle,
                     ),
                     const SizedBox(height: 12),
                     ..._pendingRequests.map((req) => _buildRequestTile(req)),
@@ -470,10 +509,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Text(
                     'My Friends',
-                    style: GoogleFonts.outfit(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: _sectionHeaderStyle,
                   ),
                   const SizedBox(height: 12),
                   if (_friends.isEmpty)
@@ -486,7 +522,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Center(
                         child: Text(
                           'No friends yet. Add partners you like!',
-                          style: GoogleFonts.outfit(color: Colors.white30),
+                          style: _noFriendsStyle,
                         ),
                       ),
                     )
@@ -556,7 +592,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Expanded(
             child: Text(
               friend['display_name'],
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              style: _friendNameStyle,
             ),
           ),
           ElevatedButton.icon(
@@ -592,18 +628,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 8),
           Text(
             value,
-            style: GoogleFonts.outfit(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: _statValueStyle,
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.outfit(
-              fontSize: 12,
-              color: Colors.white54,
-            ),
+            style: _statLabelStyle,
             textAlign: TextAlign.center,
           ),
         ],

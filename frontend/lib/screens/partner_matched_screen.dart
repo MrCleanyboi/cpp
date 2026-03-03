@@ -4,6 +4,65 @@ import 'package:google_fonts/google_fonts.dart';
 import 'partner_chat_screen.dart';
 import '../services/friends_service.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _matchFoundTitleStyle = GoogleFonts.outfit(
+  fontSize: 32,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _partnerInitialStyle = GoogleFonts.outfit(
+  fontSize: 36,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _partnerNameStyle = GoogleFonts.outfit(
+  fontSize: 24,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _nativeLangStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  fontWeight: FontWeight.w600,
+  color: const Color(0xFF00E5FF),
+);
+
+final _learningLangStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white70,
+);
+
+final _partnerBadgeStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white70,
+);
+
+final _partnerUsernameStyle = GoogleFonts.outfit(
+  fontSize: 13,
+  color: Colors.white60,
+  fontStyle: FontStyle.italic,
+);
+
+final _addFriendBtnStyle = GoogleFonts.outfit(fontWeight: FontWeight.bold);
+
+final _countdownTextStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: const Color(0xFF00E5FF),
+  fontWeight: FontWeight.w600,
+);
+
+final _skipBtnTextStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white70,
+);
+
+final _startChatBtnStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+);
+
 class PartnerMatchedScreen extends StatefulWidget {
   final String targetLanguage;
   final Map<String, dynamic> matchData; // Real match data from API
@@ -160,11 +219,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
 
               Text(
                 '✨ Match Found!',
-                style: GoogleFonts.outfit(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: _matchFoundTitleStyle,
               ),
 
               const SizedBox(height: 40),
@@ -195,11 +250,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                       backgroundColor: const Color(0xFF6C63FF),
                       child: Text(
                         (partner['display_name'] ?? 'P')[0],
-                        style: GoogleFonts.outfit(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                        style: _partnerInitialStyle,
                       ),
                     ),
 
@@ -208,11 +259,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                     // Name
                     Text(
                       partner['display_name'] ?? 'Partner',
-                      style: GoogleFonts.outfit(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                        style: _partnerNameStyle,
                     ),
 
                     const SizedBox(height: 8),
@@ -234,11 +281,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                           const SizedBox(width: 6),
                           Text(
                             'Native ${partner['language'] ?? 'Unknown'}',
-                            style: GoogleFonts.outfit(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF00E5FF),
-                            ),
+                            style: _nativeLangStyle,
                           ),
                         ],
                       ),
@@ -258,10 +301,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                         const SizedBox(width: 6),
                         Text(
                           'Learning ${widget.targetLanguage}',
-                          style: GoogleFonts.outfit(
-                            fontSize: 14,
-                            color: Colors.white70,
-                          ),
+                          style: _learningLangStyle,
                         ),
                       ],
                     ),
@@ -280,10 +320,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                         const SizedBox(width: 6),
                         Text(
                           'Language Partner',
-                          style: GoogleFonts.outfit(
-                            fontSize: 14,
-                            color: Colors.white70,
-                          ),
+                          style: _partnerBadgeStyle,
                         ),
                       ],
                     ),
@@ -299,11 +336,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                       ),
                       child: Text(
                         '@${partner['username'] ?? 'user'}',
-                        style: GoogleFonts.outfit(
-                          fontSize: 13,
-                          color: Colors.white60,
-                          fontStyle: FontStyle.italic,
-                        ),
+                          style: _partnerUsernameStyle,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -351,7 +384,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                         ),
                         label: Text(
                           _isRequestSent ? 'Request Sent' : 'Add Friend',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                          style: _addFriendBtnStyle,
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: _isRequestSent ? Colors.greenAccent : const Color(0xFF6C63FF),
@@ -371,11 +404,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
               // Countdown
               Text(
                 'Starting chat in $countdown...',
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  color: const Color(0xFF00E5FF),
-                  fontWeight: FontWeight.w600,
-                ),
+                style: _countdownTextStyle,
               ),
 
               const Spacer(),
@@ -400,10 +429,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                           const SizedBox(width: 8),
                           Text(
                             'Skip',
-                            style: GoogleFonts.outfit(
-                              fontSize: 16,
-                              color: Colors.white70,
-                            ),
+                            style: _skipBtnTextStyle,
                           ),
                         ],
                       ),
@@ -428,10 +454,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                           const SizedBox(width: 8),
                           Text(
                             'Start Chat',
-                            style: GoogleFonts.outfit(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: _startChatBtnStyle,
                           ),
                         ],
                       ),

@@ -3,6 +3,34 @@ import 'package:google_fonts/google_fonts.dart';
 import 'home_screen.dart';
 import '../services/auth_service.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _selectionTitleStyle = GoogleFonts.outfit(
+  fontSize: 32,
+  fontWeight: FontWeight.bold,
+  height: 1.2,
+);
+
+final _selectionSubStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white60,
+);
+
+final _btnTextStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.w600,
+);
+
+final _langNameStyle = GoogleFonts.outfit(
+  fontSize: 22,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _langNativeStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white54,
+);
+
 class LanguageSelectionScreen extends StatefulWidget {
   const LanguageSelectionScreen({super.key});
 
@@ -68,20 +96,13 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
               // Header
               Text(
                 'What do you want\nto learn?',
-                style: GoogleFonts.outfit(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  height: 1.2,
-                ),
+                style: _selectionTitleStyle,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
                 'Choose your target language',
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  color: Colors.white60,
-                ),
+                style: _selectionSubStyle,
                 textAlign: TextAlign.center,
               ),
               
@@ -128,10 +149,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   children: [
                     Text(
                       'Continue',
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
+                        style: _btnTextStyle,
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.arrow_forward_rounded),
@@ -203,19 +221,12 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                 children: [
                   Text(
                     language['name']!,
-                    style: GoogleFonts.outfit(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                      style: _langNameStyle,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     language['nativeName']!,
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      color: Colors.white54,
-                    ),
+                      style: _langNativeStyle,
                   ),
                 ],
               ),

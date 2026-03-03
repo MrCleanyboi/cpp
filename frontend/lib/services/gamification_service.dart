@@ -1,201 +1,177 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import '../config/api_config.dart';
 
+/// Hard cap on every outbound request so a slow/unreachable backend
+/// can never freeze the UI thread indefinitely.
+const _kTimeout = Duration(seconds: 8);
+
 class GamificationService {
-  // Base URL - platform aware
   String get baseUrl => '${ApiConfig.baseUrl}/api';
-  
-  // Get user gamification profile
+
+  // ── Helper ──────────────────────────────────────────────────────────────────
+
+  /// GET with timeout.
+  Future<http.Response> _get(Uri url) =>
+      http.get(url).timeout(_kTimeout);
+
+  /// POST with timeout.
+  Future<http.Response> _post(Uri url, Object body) =>
+      http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(body),
+      ).timeout(_kTimeout);
+
+  // ── API methods ─────────────────────────────────────────────────────────────
+
   Future<Map<String, dynamic>> getUserProfile(String userId) async {
+    if (userId.isEmpty) {
+      throw Exception('userId cannot be empty for profile lookup');
+    }
     try {
-      final url = Uri.parse('$baseUrl/gamification/profile?user_id=$userId');
-      final response = await http.get(url);
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data'] as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to load profile');
+      final res = await _get(
+        Uri.parse('$baseUrl/gamification/profile?user_id=$userId'),
+      );
+      if (res.statusCode == 200) {
+        return json.decode(res.body)['data'] as Map<String, dynamic>;
       }
+      throw Exception('Failed to load profile: ${res.statusCode}');
     } catch (e) {
-      print('Error getting profile: $e');
+      print('GamificationService.getUserProfile: $e');
       rethrow;
     }
   }
-  
-  // Complete a lesson
+
   Future<Map<String, dynamic>> completeLesson({
     required String userId,
-    String? lessonId, // Add lessonId for per-language tracking
+    String? lessonId,
     required bool perfect,
     required int timeSpentMinutes,
   }) async {
     try {
-      final url = Uri.parse('$baseUrl/gamification/lesson/complete');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
+      final res = await _post(
+        Uri.parse('$baseUrl/gamification/lesson/complete'),
+        {
           'user_id': userId,
-          if (lessonId != null) 'lesson_id': lessonId, // Include if provided
+          if (lessonId != null) 'lesson_id': lessonId,
           'perfect': perfect,
           'time_spent_minutes': timeSpentMinutes,
-        }),
+        },
       );
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data'] as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to complete lesson');
+      if (res.statusCode == 200) {
+        return json.decode(res.body)['data'] as Map<String, dynamic>;
       }
+      throw Exception('Failed to complete lesson: ${res.statusCode}');
     } catch (e) {
-      print('Error completing lesson: $e');
+      print('GamificationService.completeLesson: $e');
       rethrow;
     }
   }
-  
-  // Lose a heart
+
   Future<Map<String, dynamic>> loseHeart(String userId) async {
     try {
-      final url = Uri.parse('$baseUrl/gamification/hearts/lose');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'user_id': userId}),
+      final res = await _post(
+        Uri.parse('$baseUrl/gamification/hearts/lose'),
+        {'user_id': userId},
       );
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data'] as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to lose heart');
+      if (res.statusCode == 200) {
+        return json.decode(res.body)['data'] as Map<String, dynamic>;
       }
+      throw Exception('Failed to lose heart: ${res.statusCode}');
     } catch (e) {
-      print('Error losing heart: $e');
+      print('GamificationService.loseHeart: $e');
       rethrow;
     }
   }
-  
-  // Refill hearts
+
   Future<Map<String, dynamic>> refillHearts({
     required String userId,
     required bool useGems,
   }) async {
     try {
-      final url = Uri.parse('$baseUrl/gamification/hearts/refill');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'user_id': userId,
-          'use_gems': useGems,
-        }),
+      final res = await _post(
+        Uri.parse('$baseUrl/gamification/hearts/refill'),
+        {'user_id': userId, 'use_gems': useGems},
       );
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data'] as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to refill hearts');
+      if (res.statusCode == 200) {
+        return json.decode(res.body)['data'] as Map<String, dynamic>;
       }
+      throw Exception('Failed to refill hearts: ${res.statusCode}');
     } catch (e) {
-      print('Error refilling hearts: $e');
+      print('GamificationService.refillHearts: $e');
       rethrow;
     }
   }
-  
-  // Get achievements
+
   Future<Map<String, dynamic>> getAchievements(String userId) async {
     try {
-      final url = Uri.parse('$baseUrl/gamification/achievements?user_id=$userId');
-      final response = await http.get(url);
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data'] as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to load achievements');
+      final res = await _get(
+        Uri.parse('$baseUrl/gamification/achievements?user_id=$userId'),
+      );
+      if (res.statusCode == 200) {
+        return json.decode(res.body)['data'] as Map<String, dynamic>;
       }
+      throw Exception('Failed to load achievements: ${res.statusCode}');
     } catch (e) {
-      print('Error getting achievements: $e');
+      print('GamificationService.getAchievements: $e');
       rethrow;
     }
   }
-  
-  // Get leaderboard
+
   Future<Map<String, dynamic>> getLeaderboard({
-    required String type, // weekly, monthly, all_time
+    required String type,
     String? userId,
     int limit = 50,
   }) async {
     try {
-      String url = '$baseUrl/gamification/leaderboard?leaderboard_type=$type&limit=$limit';
-      if (userId != null) {
-        url += '&user_id=$userId';
+      String url =
+          '$baseUrl/gamification/leaderboard?leaderboard_type=$type&limit=$limit';
+      if (userId != null) url += '&user_id=$userId';
+
+      final res = await _get(Uri.parse(url));
+      if (res.statusCode == 200) {
+        return json.decode(res.body)['data'] as Map<String, dynamic>;
       }
-      
-      final response = await http.get(Uri.parse(url));
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data'] as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to load leaderboard');
-      }
+      throw Exception('Failed to load leaderboard: ${res.statusCode}');
     } catch (e) {
-      print('Error getting leaderboard: $e');
+      print('GamificationService.getLeaderboard: $e');
       rethrow;
     }
   }
-  
-  // Award XP (for when AI chat gives XP, etc.)
+
   Future<Map<String, dynamic>> awardXP({
     required String userId,
     required int xpAmount,
     String reason = '',
   }) async {
     try {
-      final url = Uri.parse('$baseUrl/gamification/xp');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'user_id': userId,
-          'xp_amount': xpAmount,
-          'reason': reason,
-        }),
+      final res = await _post(
+        Uri.parse('$baseUrl/gamification/xp'),
+        {'user_id': userId, 'xp_amount': xpAmount, 'reason': reason},
       );
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data'] as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to award XP');
+      if (res.statusCode == 200) {
+        return json.decode(res.body)['data'] as Map<String, dynamic>;
       }
+      throw Exception('Failed to award XP: ${res.statusCode}');
     } catch (e) {
-      print('Error awarding XP: $e');
+      print('GamificationService.awardXP: $e');
       rethrow;
     }
   }
-  
-  // Update streak
+
   Future<Map<String, dynamic>> updateStreak(String userId) async {
     try {
-      final url = Uri.parse('$baseUrl/gamification/streak/update?user_id=$userId');
-      final response = await http.post(url);
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['data'] as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to update streak');
+      final res = await _post(
+        Uri.parse('$baseUrl/gamification/streak/update?user_id=$userId'),
+        {},
+      );
+      if (res.statusCode == 200) {
+        return json.decode(res.body)['data'] as Map<String, dynamic>;
       }
+      throw Exception('Failed to update streak: ${res.statusCode}');
     } catch (e) {
-      print('Error updating streak: $e');
+      print('GamificationService.updateStreak: $e');
       rethrow;
     }
   }

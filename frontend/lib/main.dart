@@ -26,6 +26,19 @@ final _outfitTextTheme = GoogleFonts.outfitTextTheme().copyWith(
 // Shared singleton FriendsService instance — avoid creating new ones
 final _friendsServiceSingleton = FriendsService();
 
+final _splashTitleStyle = GoogleFonts.outfit(
+  fontSize: 36,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+  letterSpacing: 1.2,
+);
+
+final _splashSubStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white38,
+  letterSpacing: 2,
+);
+
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -209,21 +222,12 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
             const SizedBox(height: 32),
             Text(
               'Lexico',
-              style: GoogleFonts.outfit(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 1.2,
-              ),
+              style: _splashTitleStyle,
             ),
             const SizedBox(height: 8),
             Text(
               'Language Learning',
-              style: GoogleFonts.outfit(
-                fontSize: 14,
-                color: Colors.white38,
-                letterSpacing: 2,
-              ),
+              style: _splashSubStyle,
             ),
             const SizedBox(height: 48),
             const SizedBox(

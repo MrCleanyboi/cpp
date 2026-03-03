@@ -4,6 +4,56 @@ import 'package:google_fonts/google_fonts.dart';
 import 'partner_waiting_screen.dart';
 import '../services/matching_api_service.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _exchangeTitleStyle = GoogleFonts.outfit(
+  fontSize: 24,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _exchangeSubStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white54,
+);
+
+final _dropdownStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white,
+  fontWeight: FontWeight.w500,
+);
+
+final _levelBtnStyle = GoogleFonts.outfit(
+  fontSize: 13,
+  fontWeight: FontWeight.w600,
+);
+
+final _modeTextStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  fontWeight: FontWeight.w500,
+);
+
+final _findPartnerBtnStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+);
+
+final _statsTitleStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _sectionTitleStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _statRowStyle = GoogleFonts.outfit(
+  fontSize: 14,
+  color: Colors.white70,
+);
+
 class PartnerMatchingScreen extends StatefulWidget {
   const PartnerMatchingScreen({super.key});
 
@@ -80,18 +130,11 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
                       children: [
                         Text(
                           'Language Exchange',
-                          style: GoogleFonts.outfit(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                          style: _exchangeTitleStyle,
                         ),
                         Text(
                           'Practice with native speakers',
-                          style: GoogleFonts.outfit(
-                            fontSize: 14,
-                            color: Colors.white54,
-                          ),
+                          style: _exchangeSubStyle,
                         ),
                       ],
                     ),
@@ -119,11 +162,7 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
                     isExpanded: true,
                     icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF6C63FF)),
                     dropdownColor: const Color(0xFF1E212B),
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: _dropdownStyle,
                     items: languages.map((String language) {
                       return DropdownMenuItem<String>(
                         value: language,
@@ -168,9 +207,7 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
                         alignment: Alignment.center,
                         child: Text(
                           level,
-                          style: GoogleFonts.outfit(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                          style: _levelBtnStyle.copyWith(
                             color: isSelected ? Colors.white : Colors.white54,
                           ),
                         ),
@@ -220,9 +257,7 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
                             ),
                           Text(
                             mode,
-                            style: GoogleFonts.outfit(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                            style: _modeTextStyle.copyWith(
                               color: isSelected ? const Color(0xFF6C63FF) : Colors.white54,
                             ),
                           ),
@@ -255,10 +290,7 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
                       const SizedBox(width: 12),
                       Text(
                         'Find Practice Partner',
-                        style: GoogleFonts.outfit(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: _findPartnerBtnStyle,
                       ),
                     ],
                   ),
@@ -279,11 +311,7 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
                   children: [
                     Text(
                       'Quick Stats',
-                      style: GoogleFonts.outfit(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: _statsTitleStyle,
                     ),
                     const SizedBox(height: 16),
                     if (isLoadingStats)
@@ -312,11 +340,7 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.outfit(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
+      style: _sectionTitleStyle,
     );
   }
 
@@ -327,10 +351,7 @@ class _PartnerMatchingScreenState extends State<PartnerMatchingScreen> {
         const SizedBox(width: 12),
         Text(
           text,
-          style: GoogleFonts.outfit(
-            fontSize: 14,
-            color: Colors.white70,
-          ),
+          style: _statRowStyle,
         ),
       ],
     );

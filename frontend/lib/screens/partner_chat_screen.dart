@@ -9,6 +9,53 @@ import '../services/webrtc_service.dart';
 import 'package:intl/intl.dart';
 import '../services/friends_service.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _dialogTitleStyle = GoogleFonts.outfit(color: Colors.white);
+
+final _dialogContentStyle = GoogleFonts.outfit(color: Colors.white70);
+
+final _dialogBtnStyle = GoogleFonts.outfit(color: Colors.white54);
+
+final _dialogEndBtnStyle = GoogleFonts.outfit(fontWeight: FontWeight.bold);
+
+final _reportTitleStyle = GoogleFonts.outfit(color: Colors.white);
+
+final _reportSubtitleStyle = GoogleFonts.outfit(color: Colors.white70);
+
+final _reportOptionStyle = GoogleFonts.outfit(
+  color: const Color(0xFF00E5FF),
+  fontSize: 15,
+);
+
+final _avatarInitialStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+);
+
+final _chatPartnerNameStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+);
+
+final _durationTextStyle = GoogleFonts.outfit(
+  fontSize: 12,
+  color: Colors.white70,
+);
+
+final _waitingTextStyle = GoogleFonts.outfit(color: Colors.white24, fontSize: 10);
+
+final _mediaBtnLabelStyle = GoogleFonts.outfit(fontSize: 10, color: Colors.white54);
+
+final _messageTextStyle = GoogleFonts.outfit(color: Colors.white, fontSize: 15);
+
+final _messageTimeStyle = GoogleFonts.outfit(fontSize: 10, color: Colors.white54);
+
+final _typingIndicatorStyle = GoogleFonts.outfit(color: Colors.white54, fontStyle: FontStyle.italic);
+
+final _inputTextStyle = GoogleFonts.outfit(color: Colors.white);
+
+final _inputHintStyle = GoogleFonts.outfit(color: Colors.white30);
+
 class PartnerChatScreen extends StatefulWidget {
   final String matchId;
   final Map<String, dynamic> partner;
@@ -264,18 +311,18 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'End Session?',
-          style: GoogleFonts.outfit(color: Colors.white),
+          style: _dialogTitleStyle,
         ),
         content: Text(
           'Are you sure you want to end this conversation?',
-          style: GoogleFonts.outfit(color: Colors.white70),
+          style: _dialogContentStyle,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Cancel',
-              style: GoogleFonts.outfit(color: Colors.white54),
+              style: _dialogBtnStyle,
             ),
           ),
           ElevatedButton(
@@ -300,7 +347,7 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
             ),
             child: Text(
               'End',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              style: _dialogEndBtnStyle,
             ),
           ),
         ],
@@ -326,12 +373,12 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E212B),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Report User', style: GoogleFonts.outfit(color: Colors.white)),
+        title: Text('Report User', style: _reportTitleStyle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Why are you reporting this user?', style: GoogleFonts.outfit(color: Colors.white70)),
+            Text('Why are you reporting this user?', style: _reportSubtitleStyle),
             const SizedBox(height: 16),
             _buildReportOption('Inappropriate content'),
             _buildReportOption('Harassment'),
@@ -361,10 +408,7 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Text(
            reason, 
-           style: GoogleFonts.outfit(
-            color: const Color(0xFF00E5FF),
-            fontSize: 15,
-           )
+           style: _reportOptionStyle,
         ),
       ),
     );
@@ -388,10 +432,7 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
               backgroundColor: const Color(0xFF6C63FF),
               child: Text(
                 widget.partner['display_name'][0],
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: _avatarInitialStyle,
               ),
             ),
             const SizedBox(width: 12),
@@ -401,10 +442,7 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
                 children: [
                   Text(
                     widget.partner['display_name'],
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: _chatPartnerNameStyle,
                   ),
                   Row(
                     children: [
@@ -419,10 +457,7 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
                       const SizedBox(width: 6),
                       Text(
                         _formatDuration(_sessionDuration),
-                        style: GoogleFonts.outfit(
-                          fontSize: 12,
-                          color: Colors.white70,
-                        ),
+                        style: _durationTextStyle,
                       ),
                     ],
                   ),
@@ -537,7 +572,7 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                  const Icon(Icons.videocam_off, color: Colors.white24),
-                                 Text("Waiting...", style: GoogleFonts.outfit(color: Colors.white24, fontSize: 10)),
+                                 Text("Waiting...", style: _waitingTextStyle),
                               ],
                             ),
                           ),
@@ -597,7 +632,7 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
             child: Icon(icon, color: isActive ? Colors.white : Colors.white54, size: 20),
           ),
           const SizedBox(height: 4),
-          Text(label, style: GoogleFonts.outfit(fontSize: 10, color: Colors.white54)),
+          Text(label, style: _mediaBtnLabelStyle),
         ],
       ),
     );
@@ -622,11 +657,11 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(text, style: GoogleFonts.outfit(color: Colors.white, fontSize: 15)),
+            Text(text, style: _messageTextStyle),
             const SizedBox(height: 4),
             Text(
               DateFormat('HH:mm').format(timestamp),
-              style: GoogleFonts.outfit(fontSize: 10, color: Colors.white54),
+              style: _messageTimeStyle,
             ),
           ],
         ),
@@ -645,7 +680,7 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
             child: Text(widget.partner['display_name'][0], style: const TextStyle(fontSize: 10))
           ),
           const SizedBox(width: 8),
-          Text("Typing...", style: GoogleFonts.outfit(color: Colors.white54, fontStyle: FontStyle.italic)),
+          Text("Typing...", style: _typingIndicatorStyle),
         ],
       ),
     );
@@ -661,10 +696,10 @@ class _PartnerChatScreenState extends State<PartnerChatScreen> {
             child: TextField(
               controller: _messageController,
               onChanged: _onTypingChanged,
-              style: GoogleFonts.outfit(color: Colors.white),
+              style: _inputTextStyle,
               decoration: InputDecoration(
                 hintText: 'Type a message...',
-                hintStyle: GoogleFonts.outfit(color: Colors.white30),
+                hintStyle: _inputHintStyle,
                 filled: true,
                 fillColor: const Color(0xFF0F1117),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),

@@ -2,6 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/gamification_service.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _totalEarnedStyle = GoogleFonts.outfit(
+  fontSize: 48,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+);
+
+final _unlockedLabelStyle = GoogleFonts.outfit(
+  fontSize: 18,
+  color: Colors.white70,
+);
+
+final _chipLabelStyle = GoogleFonts.outfit();
+
+final _achievementTitleStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+);
+
+final _tierBadgeStyle = GoogleFonts.outfit(
+  fontSize: 10,
+  fontWeight: FontWeight.bold,
+);
+
+final _detailsTitleStyle = GoogleFonts.outfit(
+  fontSize: 24,
+  fontWeight: FontWeight.bold,
+);
+
+final _detailsDescStyle = GoogleFonts.outfit(
+  fontSize: 16,
+  color: Colors.white70,
+);
+
 class AchievementsScreen extends StatefulWidget {
   final String userId;
   
@@ -92,19 +126,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               children: [
                 Text(
                   '${data['total_earned']} / ${data['total_available']}',
-                  style: GoogleFonts.outfit(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: _totalEarnedStyle,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Achievements Unlocked',
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    color: Colors.white70,
-                  ),
+                  style: _unlockedLabelStyle,
                 ),
                 const SizedBox(height: 16),
                 ClipRRect(
@@ -173,7 +200,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         },
         backgroundColor: const Color(0xFF1E212B),
         selectedColor: Theme.of(context).primaryColor,
-        labelStyle: GoogleFonts.outfit(
+        labelStyle: _chipLabelStyle.copyWith(
           color: isSelected ? Colors.white : Colors.white70,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
@@ -237,9 +264,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                   // Title
                   Text(
                     achievement['title'],
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    style: _achievementTitleStyle.copyWith(
                       color: isEarned ? Colors.white : Colors.white38,
                     ),
                     textAlign: TextAlign.center,
@@ -260,9 +285,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                     ),
                     child: Text(
                       achievement['tier'].toUpperCase(),
-                      style: GoogleFonts.outfit(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                      style: _tierBadgeStyle.copyWith(
                         color: _getTierColor(achievement['tier']),
                       ),
                     ),
@@ -323,19 +346,13 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             const SizedBox(height: 16),
             Text(
               achievement['title'],
-              style: GoogleFonts.outfit(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: _detailsTitleStyle,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               achievement['description'],
-              style: GoogleFonts.outfit(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
+              style: _detailsDescStyle,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),

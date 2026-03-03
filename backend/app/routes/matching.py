@@ -15,6 +15,7 @@ Routes:
 from fastapi import APIRouter, HTTPException, Header
 from typing import Optional
 from bson import ObjectId
+from app.config import config
 
 from app.models.communications import (
     JoinQueueRequest,

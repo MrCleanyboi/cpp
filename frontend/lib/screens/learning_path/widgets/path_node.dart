@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+final _startBubbleTextStyle = GoogleFonts.outfit(
+  color: const Color(0xFF6C63FF),
+  fontWeight: FontWeight.bold,
+  fontSize: 14,
+);
+
 class PathNode extends StatefulWidget {
   final String title;
   final IconData icon;
@@ -111,51 +118,12 @@ class _PathNodeState extends State<PathNode> with SingleTickerProviderStateMixin
                   Container(
                     width: 80,
                     height: 80,
-                    margin: EdgeInsets.only(bottom: _controller.value * 10 + 6), // Move this down when pressed
+                    margin: EdgeInsets.only(bottom: _controller.value * 10 + 6),
                     decoration: BoxDecoration(
                       color: mainColor,
                       shape: BoxShape.circle,
                     ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Shine effect
-                        if (!widget.isLocked)
-                          Positioned(
-                            top: 10,
-                            left: 15,
-                            child: Container(
-                              width: 15,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                        
-                        // Icon or Checkmark
-                        Icon(
-                          widget.isCompleted ? Icons.check_rounded : widget.icon,
-                          color: iconColor,
-                          size: 40,
-                        ),
-                        
-                        // Stars for completed levels (optional decoration)
-                        if (widget.isCompleted)
-                           Positioned(
-                             bottom: 5,
-                             child: Row(
-                               mainAxisSize: MainAxisSize.min,
-                               children: [
-                                 Icon(Icons.star, size: 12, color: Colors.amber),
-                                 Icon(Icons.star, size: 14, color: Colors.amber),
-                                 Icon(Icons.star, size: 12, color: Colors.amber),
-                               ],
-                             ),
-                           )
-                      ],
-                    ),
+                    child: child, // Use the cached child
                   ),
                   
                   // Floating "START" Bubble for current item
@@ -172,6 +140,46 @@ class _PathNodeState extends State<PathNode> with SingleTickerProviderStateMixin
             ),
           );
         },
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Shine effect
+            if (!widget.isLocked)
+              Positioned(
+                top: 10,
+                left: 15,
+                child: Container(
+                  width: 15,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            
+            // Icon or Checkmark
+            Icon(
+              widget.isCompleted ? Icons.check_rounded : widget.icon,
+              color: iconColor,
+              size: 40,
+            ),
+            
+            // Stars for completed levels
+            if (widget.isCompleted)
+              Positioned(
+                bottom: 5,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.star, size: 12, color: Colors.amber),
+                    Icon(Icons.star, size: 14, color: Colors.amber),
+                    Icon(Icons.star, size: 12, color: Colors.amber),
+                  ],
+                ),
+              )
+          ],
+        ),
       ),
     );
   }
@@ -198,11 +206,7 @@ class _StartBubble extends StatelessWidget {
         children: [
           Text(
             "START",
-            style: GoogleFonts.outfit(
-              color: const Color(0xFF6C63FF),
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+            style: _startBubbleTextStyle,
           ),
           // Little triangle indicator
            Transform.translate(
