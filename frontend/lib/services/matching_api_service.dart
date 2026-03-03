@@ -1,17 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import '../config/api_config.dart';
 
 /// API Service for Communications Module
 /// 
 /// Handles all REST API calls for partner matching
 class MatchingApiService {
   // Backend URL - dynamic based on platform
-  static String get baseUrl {
-    if (kIsWeb) return 'http://127.0.0.1:8000/api/match';
-    return 'http://10.0.2.2:8000/api/match';
-  }
+  static String get baseUrl => '${ApiConfig.baseUrl}/api/match';
   
   String? _token;
   

@@ -5,18 +5,11 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/user_model.dart';
 import 'api_service.dart';
+import '../config/api_config.dart';
 
 class AuthService {
   // Base URL - platform aware
-  static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:8000/api';
-    } else if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8000/api';
-    } else {
-      return 'http://127.0.0.1:8000/api';
-    }
-  }
+  static String get baseUrl => '${ApiConfig.baseUrl}/api';
 
   // Storage keys
   static const String _tokenKey = 'auth_token';

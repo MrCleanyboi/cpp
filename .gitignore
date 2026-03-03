@@ -4,8 +4,13 @@ Thumbs.db
 
 # Environment Variables (CRITICAL)
 .env
+.env.local
 backend/.env
 **/.env
+
+# Ngrok Temporary Files
+backend/ngrok_info.json
+backend/url.txt
 
 # Python/Backend
 __pycache__/

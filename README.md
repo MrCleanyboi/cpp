@@ -1,35 +1,62 @@
-# AI Language Tutor - Setup & Run
+# Lexico - AI Language Tutor
+
+Lexico is a polished AI-powered language learning application built with Flutter and FastAPI.
 
 ## Prerequisites
-1. **Flutter SDK** installed and in your PATH.
-2. **Python 3.10+** installed.
-3. **Android Studio** (for Emulator) or a physical Android device.
+1. **Flutter SDK** (>= 3.0.0)
+2. **Python** (3.10+)
+3. **MongoDB** (running locally or via Atlas)
+4. **Gemini API Key** (from Google AI Studio)
+5. **ffmpeg** (needed for AI voice transcription)
 
-## 1. Setup Backend (The Brain)
-The app needs the backend to answer chat messages.
+---
 
-1. Open a terminal in `ai_language_tutor/backend`.
-2. Install dependencies:
+## 🚀 Setup Instructions
+
+### 1. Backend Configuration
+1. Navigate to the `backend/` directory.
+2. Create a `.env` file by copying the template:
    ```bash
+   cp .env.example .env
+   ```
+3. Open `.env` and fill in your:
+   - `MONGODB_URL`
+   - `GEMINI_API_KEY`
+4. Create a virtual environment and install dependencies:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    ```
-3. Run the server:
+5. Seed the database with initial course data:
    ```bash
-   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   python seed_courses.py
    ```
-   *Keep this terminal open.*
+6. Run the server:
+   ```bash
+   uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+   ```
 
-## 2. Setup Frontend (The App)
-1. Open a *new* terminal in `ai_language_tutor/frontend`.
-2. Get dependencies:
+### 2. Frontend Configuration
+1. Navigate to the `frontend/` directory.
+2. Install dependencies:
    ```bash
    flutter pub get
    ```
-3. Run the app:
+3. **Remote Testing (Ngrok):**
+   - If testing on a physical device, start an ngrok tunnel: `ngrok http 8000`
+   - Update `NGROK_HOST` in your backend `.env`.
+   - Update `_ngrokHost` in `lib/config/api_config.dart`.
+4. Run the app:
    ```bash
    flutter run
    ```
 
-## Note for Android Emulator
-The app is configured to connect to `http://10.0.2.2:8000`, which is the special IP address for "localhost" inside the Android Emulator.
-- If running on a **Physical Device**, you must change `baseUrl` in `lib/services/api_service.dart` to your computer's local Wi-Fi IP (e.g., `192.168.1.X:8000`).
+## 🛠 Features
+- **Learning Path:** Curated lessons with interactive exercises.
+- **AI Tutor:** Real-time chat practice with an AI persona.
+- **Connect:** Match with partners and practice via text or WebRTC (experimental).
+- **Gamification:** Earn gems, track hearts, and unlock achievements.
+
+## 📝 License
+This project is for educational purposes.

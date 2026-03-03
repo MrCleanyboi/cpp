@@ -2,18 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../config/api_config.dart';
 
 class GamificationService {
   // Base URL - platform aware
-  String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:8000/api';
-    } else if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8000/api';
-    } else {
-      return 'http://127.0.0.1:8000/api';
-    }
-  }
+  String get baseUrl => '${ApiConfig.baseUrl}/api';
   
   // Get user gamification profile
   Future<Map<String, dynamic>> getUserProfile(String userId) async {

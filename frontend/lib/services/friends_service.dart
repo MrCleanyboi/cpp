@@ -5,6 +5,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
 import 'api_service.dart';
+import '../config/api_config.dart';
 
 class FriendsService extends ChangeNotifier {
   static final FriendsService _instance = FriendsService._internal();
@@ -18,10 +19,7 @@ class FriendsService extends ChangeNotifier {
   bool _isConnected = false;
   bool get isConnected => _isConnected;
 
-  String get _wsUrl {
-    final base = ApiService.baseUrl.replaceFirst('http', 'ws');
-    return '$base/ws';
-  }
+  String get _wsUrl => '${ApiConfig.wsUrl}/ws';
 
   // Connect to personal notification WebSocket
   Future<void> connect() async {

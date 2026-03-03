@@ -6,23 +6,38 @@ import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
 import 'services/friends_service.dart';
 
+// ─── Pre-compute theme ONCE at module level, not inside build() ───────────────
+// GoogleFonts.outfitTextTheme() loads font assets from disk. Putting it inside
+// build() caused "Skipped 554 frames" because it ran on every single rebuild.
+final _outfitTextTheme = GoogleFonts.outfitTextTheme().copyWith(
+  bodyLarge: GoogleFonts.outfit(color: Colors.white),
+  bodyMedium: GoogleFonts.outfit(color: Colors.white),
+  bodySmall: GoogleFonts.outfit(color: Colors.white),
+  titleLarge: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+  titleMedium: GoogleFonts.outfit(color: Colors.white),
+  titleSmall: GoogleFonts.outfit(color: Colors.white),
+  headlineLarge: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+  headlineMedium: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+  displayLarge: GoogleFonts.outfit(color: Colors.white),
+  displayMedium: GoogleFonts.outfit(color: Colors.white),
+  labelLarge: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+);
+
+// Shared singleton FriendsService instance — avoid creating new ones
+final _friendsServiceSingleton = FriendsService();
+
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    print('DEBUG: main() started, WidgetsFlutterBinding initialized');
-    
-    // Add crash handling if needed
+
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
-      print('DEBUG: Flutter Error: ${details.exception}');
-      print('DEBUG: Stack Trace: ${details.stack}');
+      debugPrint('Flutter Error: ${details.exception}');
     };
 
     runApp(const AiTutorApp());
-    print('DEBUG: runApp() called');
   }, (error, stack) {
-    print('DEBUG: Uncaught error: $error');
-    print('DEBUG: Stack trace: $stack');
+    debugPrint('Uncaught error: $error\n$stack');
   });
 }
 
@@ -37,23 +52,15 @@ class AiTutorApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F1117), // Deep dark rich blue-black
-        primaryColor: const Color(0xFF6C63FF), // Vibrant Purple
+        scaffoldBackgroundColor: const Color(0xFF0F1117),
+        primaryColor: const Color(0xFF6C63FF),
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFF6C63FF),
-          secondary: Color(0xFF00E5FF), // Cyan accent
-          surface: Color(0xFF1E212B), // Slightly lighter card bg
+          secondary: Color(0xFF00E5FF),
+          surface: Color(0xFF1E212B),
         ),
-// ... (omitting middle lines for brevity if not strictly needed, but replace_file_content usually needs block)
-// ... wait, I'll do two separate replacements or one large block if they are close.
-// Title is line 34. Icon is line 187. They are far apart. I should use multi_replace or two calls.
-// I will use replace_file_content for the TITLE first.
-        textTheme: GoogleFonts.outfitTextTheme(
-          Theme.of(context).textTheme.apply(
-            bodyColor: Colors.white,
-            displayColor: Colors.white,
-          ),
-        ),
+        // Use pre-computed theme — no per-build font loading
+        textTheme: _outfitTextTheme,
         appBarTheme: AppBarTheme(
           backgroundColor: const Color(0xFF0F1117),
           elevation: 0,
@@ -93,13 +100,12 @@ class AiTutorApp extends StatelessWidget {
           hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
         ),
       ),
-      // home: const HomeScreen(), // DEBUG: Direct launch to test rendering
       home: const AuthCheckScreen(),
     );
   }
 }
 
-// Splash screen that checks authentication status
+// ─── Auth Check Screen ────────────────────────────────────────────────────────
 class AuthCheckScreen extends StatefulWidget {
   const AuthCheckScreen({super.key});
 
@@ -113,56 +119,57 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
   @override
   void initState() {
     super.initState();
-    print('DEBUG: AuthCheckScreen initState');
     _checkAuth();
   }
 
   Future<void> _checkAuth() async {
-    print('DEBUG: Starting _checkAuth');
     try {
-      // Wait a moment for splash effect
-      await Future.delayed(const Duration(seconds: 1));
-      print('DEBUG: Future.delayed completed');
-      
-      if (!mounted) {
-        print('DEBUG: AuthCheckScreen not mounted');
-        return;
-      }
+      // Brief delay for splash effect — keeps first frame snappy
+      await Future.delayed(const Duration(milliseconds: 800));
+      if (!mounted) return;
 
-      print('DEBUG: Checking authenticaton...');
-      // Check if user is authenticated with timeout
+      // Verify token with a hard timeout so we never hang indefinitely
       final isAuth = await _authService.isAuthenticated().timeout(
-        const Duration(seconds: 5),
+        const Duration(seconds: 6),
         onTimeout: () {
-            print('DEBUG: Auth check timed out');
-            return false;
+          debugPrint('DEBUG: Auth check timed out, treating as unauthenticated');
+          return false;
         },
       );
-      print('DEBUG: Auth check result: $isAuth');
 
       if (!mounted) return;
 
       if (isAuth) {
-        print('DEBUG: Navigating to HomeScreen');
-        
-        // Initialize Friends real-time service
-        FriendsService().connect();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+        // Connect the shared FriendsService singleton (non-blocking)
+        _friendsServiceSingleton.connect();
+
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const HomeScreen(),
+              transitionDuration: const Duration(milliseconds: 400),
+              transitionsBuilder: (_, anim, __, child) =>
+                  FadeTransition(opacity: anim, child: child),
+            ),
+          );
+        }
       } else {
-        print('DEBUG: Navigating to WelcomeScreen');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const WelcomeScreen(),
+              transitionDuration: const Duration(milliseconds: 400),
+              transitionsBuilder: (_, anim, __, child) =>
+                  FadeTransition(opacity: anim, child: child),
+            ),
+          );
+        }
       }
     } catch (e, s) {
-      print('DEBUG: Error in _checkAuth: $e');
-      print('DEBUG: Stack: $s');
-      // Navigate to welcome screen on error as fallback
-       if (mounted) {
+      debugPrint('DEBUG: Error in _checkAuth: $e\n$s');
+      if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const WelcomeScreen()),
@@ -172,15 +179,9 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
   }
 
   @override
-  void dispose() {
-    print('DEBUG: AuthCheckScreen disposed');
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    print('DEBUG: AuthCheckScreen build');
     return Scaffold(
+      backgroundColor: const Color(0xFF0F1117),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -189,8 +190,15 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: const Color(0xFF6C63FF).withOpacity(0.1),
+                color: const Color(0xFF6C63FF).withOpacity(0.12),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6C63FF).withOpacity(0.3),
+                    blurRadius: 30,
+                    spreadRadius: 5,
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.language_rounded,
@@ -198,10 +206,34 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
                 color: Color(0xFF6C63FF),
               ),
             ),
-            const SizedBox(height: 24),
-            const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            const Text('Initializing...', style: TextStyle(color: Colors.white)),
+            const SizedBox(height: 32),
+            Text(
+              'Lexico',
+              style: GoogleFonts.outfit(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Language Learning',
+              style: GoogleFonts.outfit(
+                fontSize: 14,
+                color: Colors.white38,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 48),
+            const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Color(0xFF6C63FF),
+              ),
+            ),
           ],
         ),
       ),

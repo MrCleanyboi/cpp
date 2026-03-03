@@ -31,6 +31,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _hearts = 5;
   final FriendsService _friendsService = FriendsService();
   StreamSubscription? _friendsSubscription;
+  List<Widget>? _cachedScreens;
+  String? _cachedLanguage;
 
   @override
   void initState() {
@@ -108,6 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _userId = userId;
         _targetLanguage = user?['target_language'] ?? 'en';
+        // Invalidate cached screens since userId/language may have changed
+        _cachedScreens = null;
+        _cachedLanguage = null;
       });
     }
 
@@ -149,25 +154,36 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  List<Widget> _getScreens() {
+    if (_cachedScreens != null &&
+        _cachedLanguage == _targetLanguage &&
+        _cachedScreens!.length == 4) {
+      return _cachedScreens!;
+    }
+    _cachedLanguage = _targetLanguage;
+    _cachedScreens = [
+      LearningPathScreen(
+        key: ValueKey(_targetLanguage),
+        targetLanguage: _targetLanguage,
+      ),
+      ChatScreen(topic: _targetLanguage == 'de' ? 'German Basics' : 'General Practice'),
+      const PartnerMatchingScreen(),
+      ProfileScreen(userId: _userId ?? ''),
+    ];
+    return _cachedScreens!;
+  }
+
   @override
   Widget build(BuildContext context) {
+    print('DEBUG: HomeScreen build. Current Tab: $_currentIndex');
     if (_userId == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    final List<Widget> screens = [
-      LearningPathScreen(
-        key: ValueKey(_targetLanguage),
-        targetLanguage: _targetLanguage,
-      ),
-      const ChatScreen(),
-      const PartnerMatchingScreen(),
-      ProfileScreen(userId: _userId!),
-    ];
-
     return Scaffold(
+      backgroundColor: const Color(0xFF0F1117),
       appBar: _currentIndex == 0
           ? AppBar(
               title: const Text('Lexico'),
@@ -241,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
           : null,
       body: IndexedStack(
         index: _currentIndex,
-        children: screens,
+        children: _getScreens(),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -253,14 +269,8 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: const Color(0xFF0F1117),
           selectedItemColor: const Color(0xFF6C63FF),
           unselectedItemColor: Colors.white24,
-          selectedLabelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: GoogleFonts.outfit(),
           type: BottomNavigationBarType.fixed,
-          onTap: (index) {
-            setState(() => _currentIndex = index);
-            // Refresh stats on every tab switch
-            if (_userId != null) _loadGamificationStats(_userId!);
-          },
+          onTap: (index) => setState(() => _currentIndex = index),
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.map_outlined),

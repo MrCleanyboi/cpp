@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import '../config/api_config.dart';
 
 /// WebSocket Service for real-time chat
 class ChatWebSocketService {
@@ -32,9 +32,8 @@ class ChatWebSocketService {
       return;
     }
     
-    // Dynamic host based on platform
-    final host = kIsWeb ? '127.0.0.1:8000' : '10.0.2.2:8000';
-    final url = 'ws://$host/ws/chat/$matchId?token=$_token';
+    // Dynamic URL from config
+    final url = '${ApiConfig.wsUrl}/ws/chat/$matchId?token=$_token';
     
     print('DEBUG: ChatWebSocketService connecting to: $url');
     print('DEBUG: Token being used: ${_token?.substring(0, 10)}...');

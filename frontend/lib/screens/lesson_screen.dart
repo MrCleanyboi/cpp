@@ -20,7 +20,8 @@ class _LessonScreenState extends State<LessonScreen> {
   double _progress = 0.0;
   bool _isAnswerChecked = false;
   bool _isAnswerCorrect = false;
-  String? _userAnswer; // Temporary store for current answer
+  String? _userAnswer; // For MultipleChoice; TranslateExercise uses _answerController
+  final TextEditingController _answerController = TextEditingController();
   
   // Feedback message
   String _feedbackMessage = "";
@@ -33,30 +34,34 @@ class _LessonScreenState extends State<LessonScreen> {
   String? _userId;
 
   @override
+  void dispose() {
+    _answerController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadUserId() async {
+    final userId = await _authService.getUserId();
+    if (mounted) setState(() => _userId = userId);
+  }
+
+  @override
   void initState() {
     super.initState();
     _lessonStartTime = DateTime.now();
     _loadUserId();
   }
 
-  Future<void> _loadUserId() async {
-    final userId = await _authService.getUserId();
-    setState(() {
-      _userId = userId;
-    });
-  }
-
   void _checkAnswer() {
     final currentExercise = widget.lesson.exercises[_currentIndex];
-    
-    // Simple validation logic
+
     bool correct = false;
-    
+
     if (currentExercise is MultipleChoiceExercise) {
       correct = _userAnswer == currentExercise.answer;
     } else if (currentExercise is TranslateExercise) {
-      // Loose comparison for translation
-      correct = _userAnswer?.trim().toLowerCase() == currentExercise.answer.toLowerCase();
+      // Read from controller — no setState on every keystroke needed
+      final typed = _answerController.text.trim().toLowerCase();
+      correct = typed == currentExercise.answer.toLowerCase();
     }
 
     setState(() {
@@ -149,8 +154,9 @@ class _LessonScreenState extends State<LessonScreen> {
         _userAnswer = null;
         _feedbackMessage = "";
       });
+      // Clear the text field for the next question without triggering setState
+      _answerController.clear();
     } else {
-      // Lesson Complete
       _completeLesson();
     }
   }
@@ -347,13 +353,10 @@ class _LessonScreenState extends State<LessonScreen> {
          hintText = "Type in Spanish...";
        }
        
-       return TextField(
+      return TextField(
          enabled: !_isAnswerChecked,
-         onChanged: (val) {
-           setState(() {
-             _userAnswer = val;
-           });
-         },
+         controller: _answerController,
+         // No onChanged setState — controller is read on Check press only
          style: const TextStyle(color: Colors.white),
          decoration: InputDecoration(
            hintText: hintText,
@@ -411,7 +414,16 @@ class _LessonScreenState extends State<LessonScreen> {
           ],
           
           ElevatedButton(
-            onPressed: (_userAnswer == null && !_isAnswerChecked) ? null : (_isAnswerChecked ? _continue : _checkAnswer),
+            onPressed: _isAnswerChecked
+                ? _continue
+                : () {
+                    // For translate exercises, read controller; for MCQ, use _userAnswer
+                    final currentExercise = widget.lesson.exercises[_currentIndex];
+                    final hasAnswer = currentExercise is TranslateExercise
+                        ? _answerController.text.trim().isNotEmpty
+                        : _userAnswer != null;
+                    if (hasAnswer) _checkAnswer();
+                  },
             style: ElevatedButton.styleFrom(
               backgroundColor: _isAnswerChecked 
                   ? (_isAnswerCorrect ? Colors.green : Colors.redAccent) // Status color
