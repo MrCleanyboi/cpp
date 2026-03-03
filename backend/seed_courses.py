@@ -1,8 +1,12 @@
 import asyncio
 import os
+from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.models.learning import Course, Unit, Lesson, IntroLesson, VocabItem
 from bson import ObjectId
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Database Connection
 MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")

@@ -1,9 +1,13 @@
 import asyncio
+import os
+from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 
+load_dotenv()
+
 async def main():
-    client = AsyncIOMotorClient("mongodb://localhost:27017")
-    db = client["ai_tutor_db"]
+    client = AsyncIOMotorClient(os.getenv("MONGODB_URL", "mongodb://localhost:27017"))
+    db = client[os.getenv("DATABASE_NAME", "ai_tutor_db")]
     
     users = await db.users.find().to_list(None)
     print(f"Found {len(users)} users.")

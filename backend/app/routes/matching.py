@@ -106,7 +106,7 @@ async def join_queue(
     # Check if matched immediately
     if result.get("matched"):
         # Build WebSocket URL
-        websocket_url = f"ws://10.0.2.2:8000/ws/chat/{result['match_id']}"
+        websocket_url = f"{config.WS_PROTOCOL}://{config.API_BASE_URL}/ws/chat/{result['match_id']}"
         
         return MatchFoundResponse(
             status="matched",
@@ -181,7 +181,7 @@ async def get_match_status(authorization: Optional[str] = Header(None)):
         is_user1 = active_match["user1"]["user_id"] == user_id
         partner_data = active_match["user2"] if is_user1 else active_match["user1"]
         
-        websocket_url = f"ws://10.0.2.2:8000/ws/chat/{str(active_match['_id'])}"
+        websocket_url = f"{config.WS_PROTOCOL}://{config.API_BASE_URL}/ws/chat/{str(active_match['_id'])}"
         
         return MatchFoundResponse(
             status="matched",
