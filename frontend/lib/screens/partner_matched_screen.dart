@@ -277,7 +277,7 @@ class _PartnerMatchedScreenState extends State<PartnerMatchedScreen>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('🇪🇸', style: TextStyle(fontSize: 16)),
+                          const Text('🇬🇧', style: TextStyle(fontSize: 16)),
                           const SizedBox(width: 6),
                           Text(
                             'Native ${partner['language'] ?? 'Unknown'}',

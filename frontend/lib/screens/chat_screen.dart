@@ -32,6 +32,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _voiceService.init();
+    _voiceService.setLanguage(selectedLanguage);
     
     // Use topic if provided, otherwise generic greeting
     String greeting = widget.topic != null 
@@ -42,6 +43,8 @@ class _ChatScreenState extends State<ChatScreen> {
       "role": "ai", 
       "text": greeting
     });
+
+    // Initial greeting is added to messages but not spoken automatically
   }
 
   void send() async {
@@ -175,7 +178,8 @@ class _ChatScreenState extends State<ChatScreen> {
       });
       _scrollToBottom();
       
-      // Auto-speak the AI response
+      // Auto-speak the AI response (using cleaned text from VoiceService)
+      await _voiceService.setLanguage(selectedLanguage);
       _voiceService.speak(reply);
     }
   }
@@ -229,7 +233,10 @@ class _ChatScreenState extends State<ChatScreen> {
                         style: const TextStyle(color: Colors.white),
                         icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
                         items: languages.map((l) => DropdownMenuItem(value: l, child: Text(l))).toList(),
-                        onChanged: (val) => setState(() => selectedLanguage = val!),
+                        onChanged: (val) {
+                          setState(() => selectedLanguage = val!);
+                          _voiceService.setLanguage(val!);
+                        },
                       ),
                     ),
                   ),

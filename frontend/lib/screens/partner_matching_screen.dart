@@ -35,6 +35,7 @@ final _modeTextStyle = GoogleFonts.outfit(
 final _findPartnerBtnStyle = GoogleFonts.outfit(
   fontSize: 18,
   fontWeight: FontWeight.bold,
+  color: Colors.white,
 );
 
 final _statsTitleStyle = GoogleFonts.outfit(

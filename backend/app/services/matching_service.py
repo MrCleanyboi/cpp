@@ -61,12 +61,27 @@ class MatchingService:
         database = self._get_db()
         waiting_queue = database["waiting_queue"]
         
+        # Ensure all IDs are strings for consistency in the queue/matches
+        user_id_str = str(user_id)
+        
+        # Check if user already has an active match
+        active_match = await self.get_active_match(user_id_str)
+        if active_match:
+             return {"matched": True, "match_id": str(active_match["_id"]), "partner": {}} # Already matched
+
         # Check if user is already in queue
-        existing = await waiting_queue.find_one({"user_id": user_id})
+        existing = await waiting_queue.find_one({"user_id": user_id_str})
+        if not existing:
+             # Also check by ObjectId for legacy entries
+             try:
+                 existing = await waiting_queue.find_one({"user_id": ObjectId(user_id_str)})
+             except:
+                 pass
+
         if existing:
             # Update their preferences instead of creating duplicate
             await waiting_queue.update_one(
-                {"user_id": user_id},
+                {"user_id": existing["user_id"]},
                 {
                     "$set": {
                         "target_language": target_language,
@@ -78,10 +93,11 @@ class MatchingService:
                     }
                 }
             )
+            user_id_str = existing["user_id"] # Use the one from DB (usually already a string)
         else:
             # Create new queue entry
             queue_entry = WaitingQueueEntry(
-                user_id=user_id,
+                user_id=user_id_str,
                 username=username,
                 display_name=display_name,
                 avatar_url=avatar_url,
@@ -96,7 +112,7 @@ class MatchingService:
             await waiting_queue.insert_one(queue_entry.model_dump(by_alias=True, exclude={"id"}))
         
         # Try to find immediate match
-        match_result = await self.find_and_create_match(user_id, native_language, target_language, proficiency_level)
+        match_result = await self.find_and_create_match(user_id_str, native_language, target_language, proficiency_level)
         
         if match_result:
             return {
@@ -176,10 +192,18 @@ class MatchingService:
         database = self._get_db()
         waiting_queue = database["waiting_queue"]
         
+        user_id_str = str(user_id)
+        
+        # Support both String and ObjectId for exclusion
+        query_exclusion = {"$nin": [user_id_str]}
+        try:
+            query_exclusion["$nin"].append(ObjectId(user_id_str))
+        except:
+            pass
+
         # Priority 1: Perfect language exchange match
-        # Partner speaks target_language natively AND wants to learn user's native language
         perfect_match = await waiting_queue.find_one({
-            "user_id": {"$ne": user_id},
+            "user_id": query_exclusion,
             "native_language": target_language,
             "target_language": native_language,
             "status": "waiting"
@@ -189,9 +213,8 @@ class MatchingService:
             return perfect_match
         
         # Priority 2: Same proficiency level match
-        # Both learning the same language at similar level
         similar_match = await waiting_queue.find_one({
-            "user_id": {"$ne": user_id},
+            "user_id": query_exclusion,
             "target_language": target_language,
             "proficiency_level": proficiency_level,
             "status": "waiting"
@@ -201,9 +224,8 @@ class MatchingService:
             return similar_match
         
         # Priority 3: Any available match
-        # Just find anyone practicing the same language
         any_match = await waiting_queue.find_one({
-            "user_id": {"$ne": user_id},
+            "user_id": query_exclusion,
             "target_language": target_language,
             "status": "waiting"
         })
@@ -243,7 +265,7 @@ class MatchingService:
         
         # Build partner response
         partner_info = MatchParticipant(
-            user_id=partner["user_id"],
+            user_id=str(partner["user_id"]),
             username=partner["username"],
             display_name=partner["display_name"],
             avatar_url=partner.get("avatar_url"),
@@ -273,7 +295,7 @@ class MatchingService:
         
         # Build participant objects
         user1_participant = MatchParticipant(
-            user_id=user1_data["user_id"],
+            user_id=str(user1_data["user_id"]),
             username=user1_data["username"],
             display_name=user1_data["display_name"],
             avatar_url=user1_data.get("avatar_url"),
@@ -282,7 +304,7 @@ class MatchingService:
         )
         
         user2_participant = MatchParticipant(
-            user_id=user2_data["user_id"],
+            user_id=str(user2_data["user_id"]),
             username=user2_data["username"],
             display_name=user2_data["display_name"],
             avatar_url=user2_data.get("avatar_url"),
@@ -330,24 +352,42 @@ class MatchingService:
         database = self._get_db()
         active_matches = database["active_matches"]
         
+        # Ensure user_id is a string for the query, but also support ObjectId just in case
+        # because some old records might have stored them as ObjectIds
+        user_id_str = str(user_id)
         
         # DEBUG LOGGING
-        print(f"DEBUG: Checking active match for user_id: {user_id} (type: {type(user_id)})")
+        print(f"DEBUG: Checking active match for user_id: {user_id_str}")
         
         query = {
+            "status": "active",
             "$or": [
-                {"user1.user_id": user_id, "status": "active"},
-                {"user2.user_id": user_id, "status": "active"}
+                {"user1.user_id": user_id_str},
+                {"user2.user_id": user_id_str}
             ]
         }
-        # print(f"DEBUG: Query: {query}")
         
         match = await active_matches.find_one(query)
         
+        # If not found by string, try by ObjectId (fallback for legacy/inconsistent data)
+        if not match:
+            try:
+                user_id_oid = ObjectId(user_id_str)
+                query_oid = {
+                    "status": "active",
+                    "$or": [
+                        {"user1.user_id": user_id_oid},
+                        {"user2.user_id": user_id_oid}
+                    ]
+                }
+                match = await active_matches.find_one(query_oid)
+            except:
+                pass
+        
         if match:
-            print(f"DEBUG: Found match {match['_id']} for user {user_id}")
+            print(f"DEBUG: Found match {match['_id']} for user {user_id_str}")
         else:
-            print(f"DEBUG: No active match found for user {user_id}")
+            print(f"DEBUG: No active match found for user {user_id_str}")
             
         return match
     

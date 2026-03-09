@@ -427,7 +427,14 @@ class _LessonScreenState extends State<LessonScreen> {
                   : const Color(0xFF6C63FF),
               disabledBackgroundColor: Colors.white10,
             ),
-            child: Text(_isAnswerChecked ? "Continue" : "Check"),
+            child: Text(
+              _isAnswerChecked ? "Continue" : "Check",
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
           ),
         ],
       ),

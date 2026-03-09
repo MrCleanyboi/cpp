@@ -51,7 +51,7 @@ class GamificationService:
             xp=0,
             level=1,
             hearts=5,
-            gems=100  # Starter gems awarded to every new user
+            gems=1000  # Starter gems awarded to every new user
         )
         
         # Insert into DB
@@ -493,14 +493,14 @@ class GamificationService:
         gam = await GamificationService.get_or_create_user_gamification(user_id)
 
         if gam.gems == 0:
-            gam.gems = 100
+            gam.gems = 1000
             gam.updated_at = datetime.utcnow()
             if gam.id:
                 await db.user_gamifications.update_one(
                     {"_id": ObjectId(gam.id)},
-                    {"$set": {"gems": 100, "updated_at": gam.updated_at}}
+                    {"$set": {"gems": 1000, "updated_at": gam.updated_at}}
                 )
-            return {"awarded": True, "gems": 100}
+            return {"awarded": True, "gems": 1000}
         return {"awarded": False, "gems": gam.gems}
 
 

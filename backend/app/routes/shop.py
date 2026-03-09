@@ -3,6 +3,7 @@ from typing import List
 from app.models.shop import ShopItem, PurchaseRequest, EquipRequest
 from app.database import db
 from bson import ObjectId
+from app.services.gamification_service import gamification_service
 
 router = APIRouter(prefix="/api/shop", tags=["shop"])
 
@@ -49,29 +50,31 @@ async def purchase_item(request: PurchaseRequest):
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    # Get user gamification data
-    gamification = await db.user_gamifications.find_one({"user_id": request.user_id})
-    if not gamification:
+    # Get user gamification data using service (handles string/ObjectId IDs robustly)
+    gamification_obj = await gamification_service.get_or_create_user_gamification(request.user_id)
+    if not gamification_obj:
         raise HTTPException(status_code=404, detail="User gamification data not found")
+    
+    # Use the gamification object for checks
 
     # Check if already owned
-    if request.item_id in gamification.get("inventory", []):
+    if request.item_id in gamification_obj.inventory:
         raise HTTPException(status_code=400, detail="Item already owned")
 
     # Check gems
-    if gamification.get("gems", 0) < item.cost:
+    if gamification_obj.gems < item.cost:
         raise HTTPException(status_code=400, detail="Not enough gems")
 
     # Deduct cost and add to inventory
     await db.user_gamifications.update_one(
-        {"user_id": request.user_id},
+        {"_id": ObjectId(gamification_obj.id)},
         {
             "$inc": {"gems": -item.cost},
             "$push": {"inventory": request.item_id}
         }
     )
 
-    return {"message": "Purchase successful", "item_id": request.item_id, "remaining_gems": gamification.get("gems", 0) - item.cost}
+    return {"message": "Purchase successful", "item_id": request.item_id, "remaining_gems": gamification_obj.gems - item.cost}
 
 @router.post("/equip")
 async def equip_item(request: EquipRequest):
@@ -80,19 +83,19 @@ async def equip_item(request: EquipRequest):
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    # Get user gamification data
-    gamification = await db.user_gamifications.find_one({"user_id": request.user_id})
-    if not gamification:
+    # Get user gamification data using service
+    gamification_obj = await gamification_service.get_or_create_user_gamification(request.user_id)
+    if not gamification_obj:
         raise HTTPException(status_code=404, detail="User gamification data not found")
 
     # Check ownership
-    if request.item_id not in gamification.get("inventory", []):
+    if request.item_id not in gamification_obj.inventory:
         raise HTTPException(status_code=400, detail="Item not owned")
 
     # Equip based on type
     update_field = "equipped_banner" if item.type == "banner" else "equipped_effect"
     await db.user_gamifications.update_one(
-        {"user_id": request.user_id},
+        {"_id": ObjectId(gamification_obj.id)},
         {"$set": {update_field: request.item_id}}
     )
 

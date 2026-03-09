@@ -40,6 +40,9 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadUserData();
     _initFriendsListener();
+    
+    // Ensure the notification WebSocket is connected (handles new login/signup)
+    _friendsService.connect();
   }
 
   void _initFriendsListener() {

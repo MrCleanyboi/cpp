@@ -6,9 +6,8 @@ import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
 import 'services/friends_service.dart';
 
-// ─── Pre-compute theme ONCE at module level, not inside build() ───────────────
-// GoogleFonts.outfitTextTheme() loads font assets from disk. Putting it inside
-// build() caused "Skipped 554 frames" because it ran on every single rebuild.
+// ─── Pre-compute theme ───────────────────────────────────────────────────────
+// Loading GoogleFonts inside build() causes "Skipped frames" on every rebuild.
 final _outfitTextTheme = GoogleFonts.outfitTextTheme().copyWith(
   bodyLarge: GoogleFonts.outfit(color: Colors.white),
   bodyMedium: GoogleFonts.outfit(color: Colors.white),
@@ -17,40 +16,15 @@ final _outfitTextTheme = GoogleFonts.outfitTextTheme().copyWith(
   titleMedium: GoogleFonts.outfit(color: Colors.white),
   titleSmall: GoogleFonts.outfit(color: Colors.white),
   headlineLarge: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
-  headlineMedium: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
-  displayLarge: GoogleFonts.outfit(color: Colors.white),
-  displayMedium: GoogleFonts.outfit(color: Colors.white),
   labelLarge: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
 );
 
-// Shared singleton FriendsService instance — avoid creating new ones
-final _friendsServiceSingleton = FriendsService();
-
-final _splashTitleStyle = GoogleFonts.outfit(
-  fontSize: 36,
-  fontWeight: FontWeight.bold,
-  color: Colors.white,
-  letterSpacing: 1.2,
-);
-
-final _splashSubStyle = GoogleFonts.outfit(
-  fontSize: 14,
-  color: Colors.white38,
-  letterSpacing: 2,
-);
-
-void main() {
-  runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-
-    FlutterError.onError = (FlutterErrorDetails details) {
-      FlutterError.presentError(details);
-      debugPrint('Flutter Error: ${details.exception}');
-    };
-
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runZonedGuarded(() {
     runApp(const AiTutorApp());
   }, (error, stack) {
-    debugPrint('Uncaught error: $error\n$stack');
+    debugPrint('CRITICAL: [Uncaught Error] $error\n$stack');
   });
 }
 
@@ -72,16 +46,10 @@ class AiTutorApp extends StatelessWidget {
           secondary: Color(0xFF00E5FF),
           surface: Color(0xFF1E212B),
         ),
-        // Use pre-computed theme — no per-build font loading
         textTheme: _outfitTextTheme,
-        appBarTheme: AppBarTheme(
-          backgroundColor: const Color(0xFF0F1117),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF0F1117),
           elevation: 0,
-          titleTextStyle: GoogleFonts.outfit(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -137,51 +105,30 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
 
   Future<void> _checkAuth() async {
     try {
-      // Brief delay for splash effect — keeps first frame snappy
+      // Small delay for branding logic
       await Future.delayed(const Duration(milliseconds: 800));
       if (!mounted) return;
 
-      // Verify token with a hard timeout so we never hang indefinitely
+      // Verify token with a hard timeout
       final isAuth = await _authService.isAuthenticated().timeout(
-        const Duration(seconds: 6),
-        onTimeout: () {
-          debugPrint('DEBUG: Auth check timed out, treating as unauthenticated');
-          return false;
-        },
-      );
+        const Duration(seconds: 7),
+        onTimeout: () => false,
+      ).catchError((_) => false);
 
       if (!mounted) return;
 
       if (isAuth) {
-        // Connect the shared FriendsService singleton (non-blocking)
-        _friendsServiceSingleton.connect();
-
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (_, __, ___) => const HomeScreen(),
-              transitionDuration: const Duration(milliseconds: 400),
-              transitionsBuilder: (_, anim, __, child) =>
-                  FadeTransition(opacity: anim, child: child),
-            ),
-          );
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
       } else {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (_, __, ___) => const WelcomeScreen(),
-              transitionDuration: const Duration(milliseconds: 400),
-              transitionsBuilder: (_, anim, __, child) =>
-                  FadeTransition(opacity: anim, child: child),
-            ),
-          );
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+        );
       }
-    } catch (e, s) {
-      debugPrint('DEBUG: Error in _checkAuth: $e\n$s');
+    } catch (e) {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -200,8 +147,8 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 100,
-              height: 100,
+              width: 120, // Restored to 120
+              height: 120,
               decoration: BoxDecoration(
                 color: const Color(0xFF6C63FF).withOpacity(0.12),
                 shape: BoxShape.circle,
@@ -213,31 +160,28 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.language_rounded,
-                size: 56,
-                color: Color(0xFF6C63FF),
-              ),
+              child: const Icon(Icons.language_rounded, size: 64, color: Color(0xFF6C63FF)), // Restored to 64
             ),
             const SizedBox(height: 32),
             Text(
               'Lexico',
-              style: _splashTitleStyle,
+              style: GoogleFonts.outfit(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Language Learning',
-              style: _splashSubStyle,
-            ),
-            const SizedBox(height: 48),
-            const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Color(0xFF6C63FF),
+              style: GoogleFonts.outfit(
+                color: Colors.white38,
+                letterSpacing: 2,
               ),
             ),
+            const SizedBox(height: 48),
+            const CircularProgressIndicator(color: Color(0xFF6C63FF)),
           ],
         ),
       ),

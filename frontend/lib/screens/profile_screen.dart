@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
@@ -98,6 +99,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<dynamic> _friends = [];
   List<dynamic> _pendingRequests = [];
   final FriendsService _friendsService = FriendsService();
+  Timer? _refreshTimer;
+
+  String? _currentUserId;
+  bool get _isOwnProfile => widget.userId == _currentUserId;
 
   @override
   void initState() {
@@ -105,13 +110,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadData();
   }
 
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> _loadData() async {
-    // Load username first
+    // Get currently logged in user ID to check ownership
+    _currentUserId = await _authService.getUserId();
+    
+    // Load username and profile data
     await _loadUsername();
-    // Then load profile with correct username
     await _loadProfile();
-    // Load friends data
-    await _loadFriendsData();
+    
+    // Only start polling and load friends/requests if it's our own profile
+    if (_isOwnProfile) {
+      await _loadFriendsData();
+      _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+        if (mounted) _loadFriendsData();
+      });
+    }
   }
 
   Future<void> _loadFriendsData() async {
@@ -123,6 +142,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _pendingRequests = requests;
       });
     }
+  }
+
+  void _navigateToProfile(String userId) {
+    if (userId.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProfileScreen(userId: userId),
+      ),
+    );
   }
 
   Future<void> _acceptRequest(String userId) async {
@@ -265,21 +294,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(_isOwnProfile ? 'Profile' : 'User Profile'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: _logout,
-          ),
-          IconButton(
-            icon: const Icon(Icons.storefront_rounded),
-            tooltip: 'Shop',
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => ShopScreen(userId: widget.userId)),
-            ).then((_) => _loadProfile()),
-          ),
+          if (_isOwnProfile) ...[
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: 'Logout',
+              onPressed: _logout,
+            ),
+            IconButton(
+              icon: const Icon(Icons.storefront_rounded),
+              tooltip: 'Shop',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ShopScreen(userId: widget.userId)),
+              ).then((_) => _loadProfile()),
+            ),
+          ],
         ],
       ),
       body: SingleChildScrollView(
@@ -575,38 +606,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildFriendTile(Map<String, dynamic> friend) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E212B),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: const Color(0xFF6C63FF).withOpacity(0.2),
-            child: Text(friend['display_name'][0], style: const TextStyle(color: Color(0xFF6C63FF))),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              friend['display_name'],
-              style: _friendNameStyle,
+    return InkWell(
+      onTap: () => _navigateToProfile(friend['id']),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E212B),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: const Color(0xFF6C63FF).withOpacity(0.2),
+              child: Text(friend['display_name'][0], style: const TextStyle(color: Color(0xFF6C63FF))),
             ),
-          ),
-          ElevatedButton.icon(
-            onPressed: () => _callFriend(friend),
-            icon: const Icon(Icons.call_rounded, size: 16),
-            label: const Text('Call'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              backgroundColor: const Color(0xFF6C63FF).withOpacity(0.1),
-              foregroundColor: const Color(0xFF6C63FF),
-              elevation: 0,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                friend['display_name'],
+                style: _friendNameStyle,
+              ),
             ),
-          ),
-        ],
+            ElevatedButton.icon(
+              onPressed: () => _callFriend(friend),
+              icon: const Icon(Icons.call_rounded, size: 16),
+              label: const Text('Call'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                backgroundColor: const Color(0xFF6C63FF).withOpacity(0.1),
+                foregroundColor: const Color(0xFF6C63FF),
+                elevation: 0,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

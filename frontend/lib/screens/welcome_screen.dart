@@ -18,6 +18,7 @@ final _welcomeSubStyle = GoogleFonts.outfit(
 final _buttonTextStyle = GoogleFonts.outfit(
   fontSize: 18,
   fontWeight: FontWeight.w600,
+  color: Colors.white,
 );
 
 class WelcomeScreen extends StatelessWidget {

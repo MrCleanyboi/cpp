@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/gamification_service.dart';
 
+import 'profile_screen.dart';
+
 // ─── Styles ──────────────────────────────────────────────────────────────────
 final _tabLabelStyle = GoogleFonts.outfit(fontWeight: FontWeight.w600);
 
@@ -160,101 +162,112 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> with SingleTicker
   }
 
   Widget _buildLeaderboardEntry(Map<String, dynamic> entry, bool isTop3) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isTop3
-            ? Theme.of(context).primaryColor.withOpacity(0.1)
-            : const Color(0xFF1E212B),
-        borderRadius: BorderRadius.circular(16),
-        border: isTop3
-            ? Border.all(color: Theme.of(context).primaryColor, width: 2)
-            : null,
-      ),
-      child: Row(
-        children: [
-          // Rank
-          SizedBox(
-            width: 40,
-            child: Text(
-              isTop3 ? _getRankEmoji(entry['rank']) : '#${entry['rank']}',
-              style: isTop3 ? _rankTop3Style : _rankNormalStyle,
-              textAlign: TextAlign.center,
-            ),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProfileScreen(userId: entry['user_id']),
           ),
-          const SizedBox(width: 12),
-          
-          // Avatar
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Theme.of(context).primaryColor.withOpacity(0.3),
-            ),
-            child: Center(
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isTop3
+              ? Theme.of(context).primaryColor.withOpacity(0.1)
+              : const Color(0xFF1E212B),
+          borderRadius: BorderRadius.circular(16),
+          border: isTop3
+              ? Border.all(color: Theme.of(context).primaryColor, width: 2)
+              : null,
+        ),
+        child: Row(
+          children: [
+            // Rank
+            SizedBox(
+              width: 40,
               child: Text(
-                entry['display_name'][0].toUpperCase(),
-                style: _avatarInitialStyle,
+                isTop3 ? _getRankEmoji(entry['rank']) : '#${entry['rank']}',
+                style: isTop3 ? _rankTop3Style : _rankNormalStyle,
+                textAlign: TextAlign.center,
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          
-          // Name and Level
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  entry['display_name'],
-                  style: _nameTextStyle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Level ${entry['level']}',
-                  style: _levelTextStyle,
-                ),
-              ],
-            ),
-          ),
-          
-          // XP
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '${entry['xp']} XP',
-              style: _xpTextStyle.copyWith(color: Theme.of(context).colorScheme.secondary),
-            ),
-          ),
-
-          // Gem reward badge for top 3
-          if (isTop3) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
+            
+            // Avatar
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF00E5FF).withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF00E5FF).withOpacity(0.4),
-                  width: 1,
+                shape: BoxShape.circle,
+                color: Theme.of(context).primaryColor.withOpacity(0.3),
+              ),
+              child: Center(
+                child: Text(
+                  entry['display_name'][0].toUpperCase(),
+                  style: _avatarInitialStyle,
                 ),
               ),
-              child: Text(
-                '+${_getGemReward(entry['rank'])} 💎',
-                style: _gemRewardStyle,
+            ),
+            const SizedBox(width: 12),
+            
+            // Name and Level
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry['display_name'],
+                    style: _nameTextStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Level ${entry['level']}',
+                    style: _levelTextStyle,
+                  ),
+                ],
               ),
             ),
+            
+            // XP
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${entry['xp']} XP',
+                style: _xpTextStyle.copyWith(color: Theme.of(context).colorScheme.secondary),
+              ),
+            ),
+  
+            // Gem reward badge for top 3
+            if (isTop3) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00E5FF).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF00E5FF).withOpacity(0.4),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  '+${_getGemReward(entry['rank'])} 💎',
+                  style: _gemRewardStyle,
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

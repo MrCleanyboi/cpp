@@ -54,7 +54,7 @@ async def signup(user_data: UserSignup):
     result = await db.users.insert_one(user_dict)
     user_id = str(result.inserted_id)
 
-    # Initialize gamification profile with 100 starter gems
+    # Initialize gamification profile with 1000 starter gems
     await GamificationService.get_or_create_user_gamification(user_id)
     
     # Create access token
