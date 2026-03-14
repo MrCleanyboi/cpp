@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../config/api_config.dart';
+import 'service_reset_registry.dart';
 
 /// Hard cap on every outbound request so a slow/unreachable backend
 /// can never freeze the UI thread indefinitely.
@@ -55,6 +56,7 @@ class AuthService {
       if (res.statusCode == 200) {
         final data = json.decode(res.body);
         await _saveAuthData(data['access_token'], data['user_id'], data['username']);
+        _resetAllServices();
         return {'success': true, 'data': data};
       }
       final error = json.decode(res.body);
@@ -83,6 +85,7 @@ class AuthService {
       if (res.statusCode == 200) {
         final data = json.decode(res.body);
         await _saveAuthData(data['access_token'], data['user_id'], data['username']);
+        _resetAllServices();
         return {'success': true, 'data': data};
       }
       final error = json.decode(res.body);
@@ -179,6 +182,11 @@ class AuthService {
     await prefs.remove(_tokenKey);
     await prefs.remove(_userIdKey);
     await prefs.remove(_usernameKey);
+    _resetAllServices();
+  }
+
+  void _resetAllServices() {
+    globalServiceReset();
   }
 
   Future<void> _saveAuthData(

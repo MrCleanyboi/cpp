@@ -5,8 +5,8 @@ class ApiConfig {
   /// host machine's localhost from the Android emulator.
   static String get host {
     if (kIsWeb) {
-      // Browsers often treat 'localhost' differently than '127.0.0.1' regarding CORS
-      return 'localhost:8000'; 
+      // 127.0.0.1 is often more reliable than 'localhost' for WebSockets in local dev
+      return '127.0.0.1:8000'; 
     }
     
     // Use targetPlatform which is web-safe (Foundation library)

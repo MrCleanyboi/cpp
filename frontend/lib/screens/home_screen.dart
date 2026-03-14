@@ -28,7 +28,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _userId;
   String _targetLanguage = 'en';
   int _gems = 0;
-  int _hearts = 5;
   final FriendsService _friendsService = FriendsService();
   StreamSubscription? _friendsSubscription;
   List<Widget?>? _cachedScreens;
@@ -131,7 +130,6 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _targetLanguage = user?['target_language'] ?? _targetLanguage;
         _gems = (profile['gems'] as num?)?.toInt() ?? _gems;
-        _hearts = (profile['hearts'] as num?)?.toInt() ?? _hearts;
         
         // IMPORTANT: Invalidate cache if language OR userId changed
         if (_cachedLanguage != _targetLanguage || _lastUserId != _userId) {
@@ -149,7 +147,6 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           _gems = (profile['gems'] as num?)?.toInt() ?? 0;
-          _hearts = (profile['hearts'] as num?)?.toInt() ?? 5;
         });
       }
     } catch (e) {
@@ -265,25 +262,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   },
-                ),
-                // Hearts display (live from API)
-                Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E212B),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.favorite, color: Colors.red, size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$_hearts',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
                 ),
                 // Gems display (live from API)
                 GestureDetector(

@@ -5,18 +5,18 @@ import '../config/api_config.dart';
 class ApiService {
   static String get baseUrl => ApiConfig.baseUrl;
 
-  static Future<String> sendMessage(String message) async {
+  static Future<String> sendMessage(String message, {String targetLanguage = 'German'}) async {
     try {
       final res = await http.post(
         Uri.parse("$baseUrl/ai-tutor/chat"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "message": message,
+          "target_language": targetLanguage,
         }),
       );
       
       if (res.statusCode == 200) {
-        // The backend returns { "reply": "..." }
         return jsonDecode(res.body)["reply"];
       } else {
         return "Error: Server responded with status ${res.statusCode}";

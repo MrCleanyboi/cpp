@@ -20,7 +20,9 @@ final _outfitTextTheme = GoogleFonts.outfitTextTheme().copyWith(
 );
 
 void main() async {
+  debugPrint('DEBUG: Calling main()');
   WidgetsFlutterBinding.ensureInitialized();
+  debugPrint('DEBUG: WidgetsFlutterBinding initialized');
   runZonedGuarded(() {
     runApp(const AiTutorApp());
   }, (error, stack) {
@@ -100,15 +102,19 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint('DEBUG: AuthCheckScreen initState');
     _checkAuth();
   }
 
   Future<void> _checkAuth() async {
     try {
+      debugPrint('DEBUG: Starting _checkAuth');
       // Small delay for branding logic
       await Future.delayed(const Duration(milliseconds: 800));
+      debugPrint('DEBUG: branding delay finished, mounted=$mounted');
       if (!mounted) return;
 
+      debugPrint('DEBUG: Verifying isAuthenticated...');
       // Verify token with a hard timeout
       final isAuth = await _authService.isAuthenticated().timeout(
         const Duration(seconds: 7),
@@ -116,6 +122,8 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
       ).catchError((_) => false);
 
       if (!mounted) return;
+
+      debugPrint('DEBUG: isAuth=$isAuth');
 
       if (isAuth) {
         Navigator.pushReplacement(

@@ -5,13 +5,16 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
 import '../config/api_config.dart';
+import 'service_reset_registry.dart';
 
 const _kTimeout = Duration(seconds: 8);
 
 class FriendsService extends ChangeNotifier {
   static final FriendsService _instance = FriendsService._internal();
   factory FriendsService() => _instance;
-  FriendsService._internal();
+  FriendsService._internal() {
+    registerServiceReset(reset);
+  }
 
   WebSocketChannel? _channel;
   final _eventController = StreamController<Map<String, dynamic>>.broadcast();
@@ -66,6 +69,11 @@ class FriendsService extends ChangeNotifier {
     _channel?.sink.close();
     _isConnected = false;
     notifyListeners();
+  }
+
+  void reset() {
+    disconnect();
+    // Clear any other state if necessary
   }
 
   // --- API Methods ---

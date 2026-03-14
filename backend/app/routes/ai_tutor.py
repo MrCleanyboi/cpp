@@ -11,7 +11,10 @@ dialogue_manager = DialogueManager()
 
 @router.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
-    reply = dialogue_manager.handle_message(request.message)
+    reply = dialogue_manager.handle_message(
+        request.message,
+        target_language=request.target_language or "German",
+    )
     return ChatResponse(reply=reply)
 
 @router.post("/speech")
@@ -26,10 +29,10 @@ async def speech_input(audio: UploadFile = File(...)):
     print(f"DEBUG: Transcribed text: '{transcription['text']}'")
     pause_info = analyze_pauses(transcription["words"])
 
-    # Send structured data to tutor
+    # Send structured data to tutor (speech always uses the session default)
     reply = dialogue_manager.handle_message(
         transcription["text"],
-        metadata=pause_info
+        metadata=pause_info,
     )
 
     return {

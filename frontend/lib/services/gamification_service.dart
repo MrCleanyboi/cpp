@@ -69,40 +69,6 @@ class GamificationService {
     }
   }
 
-  Future<Map<String, dynamic>> loseHeart(String userId) async {
-    try {
-      final res = await _post(
-        Uri.parse('$baseUrl/gamification/hearts/lose'),
-        {'user_id': userId},
-      );
-      if (res.statusCode == 200) {
-        return json.decode(res.body)['data'] as Map<String, dynamic>;
-      }
-      throw Exception('Failed to lose heart: ${res.statusCode}');
-    } catch (e) {
-      print('GamificationService.loseHeart: $e');
-      rethrow;
-    }
-  }
-
-  Future<Map<String, dynamic>> refillHearts({
-    required String userId,
-    required bool useGems,
-  }) async {
-    try {
-      final res = await _post(
-        Uri.parse('$baseUrl/gamification/hearts/refill'),
-        {'user_id': userId, 'use_gems': useGems},
-      );
-      if (res.statusCode == 200) {
-        return json.decode(res.body)['data'] as Map<String, dynamic>;
-      }
-      throw Exception('Failed to refill hearts: ${res.statusCode}');
-    } catch (e) {
-      print('GamificationService.refillHearts: $e');
-      rethrow;
-    }
-  }
 
   Future<Map<String, dynamic>> getAchievements(String userId) async {
     try {

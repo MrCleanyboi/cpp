@@ -127,6 +127,8 @@ async def websocket_chat_endpoint(
     try:
         # Authenticate user
         debug_log(f"Connection attempt. Match: {match_id}")
+        debug_log(f"Headers: {websocket.headers}")
+        debug_log(f"Query params: {websocket.query_params}")
         if not token:
             debug_log("No token provided")
             await websocket.close(code=1008, reason="Authentication required")

@@ -109,21 +109,10 @@ class _LessonScreenState extends State<LessonScreen> {
       }
     });
 
-    // Fire-and-forget heart loss — runs in background, never blocks UI
-    if (!correct) {
-      _loseHeart();
-    }
+    // Fire-and-forget heart loss — removed as per request
   }
 
   
-  Future<void> _loseHeart() async {
-    if (_userId == null) return;
-    try {
-      await _gamificationService.loseHeart(_userId!);
-    } catch (e) {
-      print('Error losing heart: $e');
-    }
-  }
   
   void _completeLesson() {
     // 1. Show the dialog IMMEDIATELY with default values — zero network wait.

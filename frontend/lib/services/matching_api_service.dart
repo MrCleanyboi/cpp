@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart';
+import 'service_reset_registry.dart';
 
 /// Hard cap on every outbound request so a slow backend can never freeze the UI.
 const _kTimeout = Duration(seconds: 8);
@@ -11,6 +12,10 @@ const _kTimeout = Duration(seconds: 8);
 /// Handles all REST API calls for partner matching.
 class MatchingApiService {
   static String get baseUrl => '${ApiConfig.baseUrl}/api/match';
+
+  MatchingApiService() {
+    registerServiceReset(invalidateToken);
+  }
 
   // ── Token cache ─────────────────────────────────────────────────────────────
   // We cache the token once per app session.  Re-read only on logout / re-login.
