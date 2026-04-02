@@ -5,6 +5,7 @@ import 'learning_path/learning_path_screen.dart';
 import 'partner_matching_screen.dart';
 import 'chat_screen.dart';
 import 'profile_screen.dart';
+import 'progress_screen.dart';
 import 'leaderboard_screen.dart';
 import '../services/auth_service.dart';
 import '../services/gamification_service.dart';
@@ -58,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
             action: SnackBarAction(
               label: 'VIEW',
               textColor: Colors.black,
-              onPressed: () => setState(() => _currentIndex = 3), // Profile
+              onPressed: () => setState(() => _currentIndex = 4), // Profile
             ),
           ),
         );
@@ -194,8 +195,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _getScreens() {
     // 1. Initialize the fixed-size list if null or invalidated
-    if (_cachedScreens == null || _cachedScreens!.length != 4) {
-      _cachedScreens = List<Widget?>.filled(4, null);
+    if (_cachedScreens == null || _cachedScreens!.length != 5) {
+      _cachedScreens = List<Widget?>.filled(5, null);
       _cachedLanguage = _targetLanguage;
       _lastUserId = _userId;
     }
@@ -219,7 +220,10 @@ class _HomeScreenState extends State<HomeScreen> {
           _cachedScreens![2] = const PartnerMatchingScreen();
           break;
         case 3:
-          _cachedScreens![3] = ProfileScreen(
+          _cachedScreens![3] = const ProgressScreen();
+          break;
+        case 4:
+          _cachedScreens![4] = ProfileScreen(
             key: ValueKey('profile_$_userId'),
             userId: _userId ?? '',
           );
@@ -227,9 +231,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
 
-    // 3. Return the list, but indexedStack expects non-null widgets.
-    // Replace any null entries with a placeholder so IndexedStack doesn't crash,
-    // though the switch logic above ensures the *current* index is always filled.
+    // 3. Return the list — replace nulls with placeholders so IndexedStack
+    // doesn't crash (the current index is always filled above).
     return _cachedScreens!.map((w) => w ?? const SizedBox.shrink()).toList();
   }
 
@@ -321,6 +324,11 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.people_outline),
               activeIcon: Icon(Icons.people_rounded),
               label: 'Connect',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart_rounded),
+              activeIcon: Icon(Icons.bar_chart_rounded),
+              label: 'Progress',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
